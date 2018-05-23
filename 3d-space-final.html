@@ -1,0 +1,312 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <title>THE FINAL FRONTIER</title>
+    <style>
+    .body{
+      background-color:black;
+    }
+    #panel{
+      position:absolute;
+      left:30px;
+      top:490px;
+      border-style:solid;
+      border-width:1px;
+      border-color:white;
+    }
+    #planetinfo{
+      position:absolute;
+      left:150px;
+      top:550px;
+      border-style:solid;
+      border-width:1px;
+      border-color:white;
+    }
+    #planetname{
+      position:absolute;
+      left:150px;
+      top:490px;
+      border-style:solid;
+      border-width:1px;
+      border-color:white;
+    }
+    </style>
+    <script src="p5.js"></script>
+    <script>
+    // The Final Frontier is a randomly generated space exploration experience. Each time the program loads,
+    // it creates a new set of stars and planets to explore. Almost everything is randomly generated:
+    // the location and number of stars, the number of planets each star has, the size, colour and orbit of each planet,
+    // whether each planet has a moon or ring, and the size of that satellite object. I use smaller sub-canvases for a mini-map and text displays (since WEBGL doesn't support text).
+    // I created the Final Frontier as a fun app to explore and mess around with, but also as a useful resource for people who need to
+    // generate large numbers of solar systems at once (for example, for sci-fi stories or tabletop campaigns).
+    var transx=0;
+    var transy=0;
+    var pg;
+    var accelerate = 10;
+    function setup(){
+      // this is the main canvas.
+      createCanvas(1000,600,WEBGL);
+      // this is the sub-canvas with the mini-map. since the image function doesn't work in webgl, we have to use
+      // CSS to make the sub-canvas display over the regular canvas. See above for the CSS.
+      // the mini-map is actually technically in 3D. this is so that we don't have to translate coordinates between 2D and 3D.
+      pg = createGraphics(100,100,WEBGL);
+      pg.elt.id='panel';
+      pg.elt.style.display='initial';
+      // these mini-maps display info on nearby star systems. The names 'planetname' and 'planetinfo' are a holdover from when
+      // i intended to name each planet individually instead of each sun (this proved to be a bit of a headache).
+      planetname = createGraphics(150,40);
+      planetname.elt.id='planetname';
+      planetname.elt.style.display='initial';
+      planetinfo = createGraphics(150,40);
+      planetinfo.elt.id='planetinfo';
+      planetinfo.elt.style.display='initial';
+      // this array has five colours. The planet colour property will randomly select two colours from this array and lerp
+      // between them at a random rate to create the colour for each planet.
+      planetcolors = [color(0,24,112),color(54,104,51),color(150,162,167),color(177,128,52),color(88,35,10)];
+      // planet names are randomly generated from three arrays for the beginning, middle and end of the name.
+      beginnings = ['T','Al','D','N','Q','R','V','B','W','L','Nan','Sh','F','Bar','Kr','Dr','Pl','Tr','Bl','Pr','Fl','Dol','S'];
+      middles = ['a','ara','ia','oa','atha','aro','atta','awa','ava','alla','al','ha','aka',
+      'ada','afa','e','era','eia','etha','ero','ewa','eva','ella','el','he','ake','eka','eda','efa','afe',
+      'i','iri','oi','ithi','iro','itto','iwa','iva','illa','hi','ika','aki','ida','idi','ifa','afi','o',
+      'oro','io','otho','otto','owa','ova','olla','ol','ho','oka','ako','ido','odi','ofa','afo','u','uru','ou','oe',
+      'ua','utha','utto','uva','ulla','ul','hu','aku','uka','udi','idu','ufa','afu','ane','ena','one','eno','ino','oni','inu','uni',
+    'uthara','uthero','ethitto','aritto','uritta','akita','attila','avilla','adera','edero','iela','ielo','uela','olora',
+  'ulera','ilera','alero'];
+      ends = ['t','tt','b','q','k','ya','r','d','s','sh','th','y','g','h','x','v','ver','van','ph','rt','ll','l','n','m',
+    'nn','rn','',''];
+// the Sun class defines the parameters for suns. as you can see, the colour of the sun is dependent on its size, with
+// larger suns being much brighter than smaller ones.
+    class Sun {
+        constructor(){
+          this.x = random(-3000,3000);
+          this.y = random(-3000,3000);
+          this.radius = random(3,10) * 10;
+          this.color = lerpColor(color(100,32,2),color(254,212,152),(this.radius/100))
+          this.beginning = random(beginnings);
+          this.middle = random(middles);
+          this.end = random(ends);
+          this.nplanets = 0;
+        }
+    }
+    // the Planet class defines the parameters for planets, including the radii of rings.
+    class Planet {
+      constructor(){
+        this.planetr = random(3,20);
+        this.planetc = lerpColor(random(planetcolors),random(planetcolors),Math.random(0,1));
+        this.ringr = random(5,20);
+        this.hasring = random(1,4);
+        this.hasmoon = random(1,6);
+        this.moonr= random(1,3);
+      }
+    }
+    // the Backstar class defines the parameters for the stars in the background.
+    class Backstar {
+      constructor(){
+        this.x = random(-1500,1500);
+        this.y = random(-2000,-1000);
+        this.z = random(-1500,1000);
+        this.starcolor = lerpColor(color(239,176,87),color(255,255,255),Math.random(0,1));
+        this.starr = random(1,6);
+      }
+    }
+    // arrays for suns, stars and planets.
+  suns = [];
+  var next_sun;
+  planets = []
+  var next_planet;
+  backstars = [];
+  var next_backstar;
+  // the number of background stars.
+  var numstars = random(800,1200);
+  // this loop generates the background stars.
+  for (var m=0; m<numstars; m=m+1){
+    var next_backstar = new Backstar;
+    backstars.push(next_backstar);
+  }
+  // the number of suns in this randomly-generated section of space (between 0 and 8).
+  var numsuns = random(0,8);
+  // this nested for loop makes the suns and planets that will populate the world.
+  for (var i=0; i<numsuns; i=i+1){
+    var next_sun = new Sun;
+    suns.push(next_sun);
+    // the number of planets attached to each sun.
+    var numplanets = random(-1,6);
+    for (var j=0; j<numplanets; j=j+1){
+      var next_planet = new Planet;
+      // the planet's x and y coordinates are set to the same as the sun's so that
+      // we can translate it to these coords as a starting point for the planet's orbit.
+      next_planet.x = next_sun.x;
+      next_planet.y = next_sun.y;
+      // this value notes the number of planets for the info text box, but doesn't otherwise affect the code.
+      next_sun.nplanets = j+1;
+      // this if statement ensures that each planet's orbit will be farther out from the last one's,
+      // so that planets don't overlap or clip into the sun.
+      if (j==0){
+        next_planet.orbit = random(30,100) + next_sun.radius
+      } else {
+        next_planet.orbit = random(30,100) + planets[planets.length-1].orbit;
+
+      }
+      // the planet's velocity is dependent on the size of the sun and the radius of the planet's orbit (just like IRL!).
+      next_planet.velocity = sqrt((0.00001*next_sun.radius)/next_planet.orbit)
+      // large planets have a roughly 1/4 chance of having a ring.
+      if (next_planet.planetr > 10){
+        if (next_planet.hasring<2){
+          next_planet.ring = true;
+        } else {next_planet.ring = false;}
+      }
+      // some planets have moons, but right now it's only possible for a planet to have one moon.
+      if (next_planet.hasmoon<2){
+        next_planet.moon = true;
+      } else {next_planet.moon = false;}
+      planets.push(next_planet);
+    }
+  }
+}
+function draw(){
+  // i use millis for the orbits of planets. I start it at a higher value so
+  // that the planets don't start aligned.
+  let s = (millis()/100)+123456789;
+  background(0);
+  pg.background(0,4,81);
+  planetname.background(0,4,81);
+  planetinfo.background(0,4,81);
+  rotateX(PI/2.5);
+  // intro text.
+  if (s<123456819){
+    planetname.fill('white');
+    planetname.textAlign(CENTER);
+    planetname.text('THE FINAL FRONTIER',75,17);
+    planetname.text('Refresh for more stars',75,32);
+    planetinfo.textSize(12);
+    planetinfo.fill('white');
+    planetinfo.textAlign(CENTER);
+    planetinfo.text('Mouse to move',75,17);
+    planetinfo.text('W to accelerate',75,32);
+  }
+  if (keyIsDown(87)){
+    accelerate = 4;
+  } else {accelerate = 10;}
+  // this section dictates the controls. the player moves the mouse towards the edges of the screen to move in that direction.
+  // if their mouse goes off the canvas, they should stop moving, barring P5 weirdness.
+if (mouseX<1){
+} else if (mouseX < 200){
+  if (mouseY<1){} else if (mouseY>599){} else{
+      transx=transx+((200-mouseX)/accelerate);}
+} if (mouseX>999){
+} else if (mouseX > 800){
+  if (mouseY<1){} else if (mouseY>599){} else{
+    transx=transx-((mouseX-800)/accelerate);}
+} if (mouseY>599){
+} else if (mouseY > 400){
+  if (mouseX<1){} else if (mouseX>999){} else{
+    transy=transy-((mouseY-400)/accelerate);}
+} if (mouseY < 1){
+} else if (mouseY < 200){
+  if (mouseX<1){} else if (mouseX>999){} else {
+    transy=transy+((200-mouseY)/accelerate);}
+}
+// the background stars come before the "translate" function that responds to player input.
+// this is so that the stars will stay stationary in the background.
+for (t of backstars){
+  fill(t.starcolor);noStroke();
+  push();
+  translate(0,0,t.z);
+  ellipse(t.x,t.y,t.starr,t.starr);
+  pop();
+}
+  translate(transx,transy,0);
+  // drawing the player's position indicator on the sub-canvas.
+  pg.push();
+  pg.fill('red');
+  pg.noStroke();
+  pg.ellipse(-(transx/60),-(transy/60),2,2);
+  // if the player goes out of bounds, these triangles will indicate where they are.
+  if (transx>3000){
+    pg.triangle(-46,-2,-46,2,-50,0);
+  }
+  if (transx<-3000){
+    pg.triangle(46,-2,46,2,50,0);
+  }
+  if (transy<-3000){
+    pg.triangle(-2,46,2,46,0,50);
+  }
+  if (transy>3000){
+    pg.triangle(-2,-46,2,-46,0,-50);
+  }
+  pg.pop();
+  // drawing the suns.
+  for (t of suns){
+    // drawing the suns in the sub-canvas.
+    pg.push();
+    pg.fill(t.color);
+    pg.noStroke();
+    pg.translate(t.x/60,t.y/60,0);
+    pg.sphere(t.radius/60);
+    pg.pop();
+    // drawing the suns in the normal canvas.
+    fill(t.color);noStroke();
+    push();
+    translate(t.x,t.y,0);
+    sphere(t.radius);
+    if (-t.x<transx+200){
+      if (-t.x>transx-200){
+        if (-t.y<transy+200){
+          if (-t.y>transy-200){
+            // displays the name of the solar system when the player is within a certain range.
+            planetname.textSize(26);
+            planetname.textAlign(CENTER,CENTER);
+            planetname.fill('white');
+            planetname.text(t.beginning+t.middle+t.end,75,23);
+            // displays the size of the solar system and number of satellites.
+            planetinfo.textSize(12);
+            planetinfo.fill('white');
+            planetinfo.textAlign(CENTER);
+            planetinfo.text('Number of planets: '+t.nplanets,75,17);
+            if (t.radius<50){
+              planetinfo.text('Size: Dwarf',75,32);
+            } else if (t.radius<80){
+              planetinfo.text('Size: Sol',75,32);
+            } else {planetinfo.text('Size: Giant',75,32);}
+
+          }
+        }
+      }
+    }
+    pop();
+  }
+  // drawing the planets.
+  for (t of planets){
+    // drawing the planets in the sub-canvas.
+    pg.push();
+    pg.fill(t.planetc);
+    pg.noStroke();
+    pg.translate(t.x/60,t.y/60,0);
+    pg.translate((t.orbit/60)*cos((s*(t.velocity/60))*TWO_PI),(t.orbit/60)*sin((s*(t.velocity/60))*TWO_PI));
+    pg.sphere(t.planetr/60);
+    pg.pop();
+    // drawing the planets in the regular canvas.
+    fill(t.planetc);noStroke();
+    push();
+    translate(t.x,t.y,0);
+    translate(t.orbit*cos((s*t.velocity)*TWO_PI),t.orbit*sin((s*t.velocity)*TWO_PI));
+    sphere(t.planetr);
+    // drawing the ring for planets with rings.
+    if (t.ring == true){
+      fill(lerpColor(t.planetc,color(255,255,255),0.3))
+      torus(t.planetr+t.ringr,2,24,2);
+    }
+    // drawing the moon for planets with moons. here I translate by my orbit again so that the moon orbits the planet instead of the sun.
+    if (t.moon == true){
+      fill(lerpColor(t.planetc,color(255,255,255),0.8));
+      translate((t.planetr+10)*cos((s*(t.velocity*10))*TWO_PI),((t.planetr+10)*sin((s*(t.velocity*10))*TWO_PI)));
+      sphere(t.moonr);
+    }
+    pop();
+  }
+}
+    </script>
+</head>
+<body background-color="#000000">
+</body>
+</html>
