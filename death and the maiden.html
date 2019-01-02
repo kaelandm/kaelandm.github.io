@@ -1,0 +1,441 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <title>DEATH AND THE MAIDEN</title>
+    <script src="p5.js"></script>
+    <script src="p5.play.js"></script>
+    <script src="p5.sound.js"></script>
+    <script>
+    // animations
+    var walking
+    var limping
+    var struggling
+    var body
+    // arm images
+    var larm1
+    var larm2
+    var larm3
+    var larm4
+    var larm5
+    var larm6
+    var larm7
+    var larm8
+    var larm9
+    var larm10
+    var larm11
+    var larm12
+    var larm13
+    var larm14
+    var larm15
+    var larm16
+    var rarm1
+    var rarm2
+    var rarm3
+    var rarm4
+    var rarm5
+    var rarm6
+    var rarm7
+    var rarm8
+    var rarm9
+    var rarm10
+    var rarm11
+    var rarm12
+    var rarm13
+    var rarm14
+    var rarm15
+    var rarm16
+    // non-image variables
+    var left = 4
+    var right = 4
+    var hp = 3
+    var startgame = 0
+    var firecounter = 0
+    var counterdelta = 1
+    var frequency = 0
+    var points=0
+    var ball
+    var ballcoords
+    var fireballs, colliders
+    var lossleft, lossright, ending, skelending, distancetocenter
+    var fx=100
+    var fy=100
+    var cx=350;
+    var cy=360;
+    var f
+    var speed = 150
+    var songstart = true
+    var song6start=true
+    function preload(){
+      // preloaded images
+      introsong=loadSound('intro.mp3');
+      mainsong=loadSound('mainmusic.mp3');
+      song6=loadSound('song6.mp3');
+      finalscore=loadImage('finalscore.png');
+      backanim3=loadAnimation('background-animation/bg9.png','background-animation/bg12.png');
+      backanim2=loadAnimation('background-animation/bg5.png','background-animation/bg8.png');
+      backanim=loadAnimation('background-animation/bg-1.png','background-animation/bg-4.png');
+      walking=loadAnimation('maiden-animation-cycles/walking/1.png','maiden-animation-cycles/walking/8.png');
+      limping=loadAnimation('maiden-animation-cycles/limping/1.png','maiden-animation-cycles/limping/8.png');
+      struggling=loadAnimation('maiden-animation-cycles/struggling/1.png','maiden-animation-cycles/struggling/8.png');
+      body=loadAnimation('skeleton-body-animation-cycle/skeleton-body-1.png','skeleton-body-animation-cycle/skeleton-body-20.png');
+      larmidle=loadAnimation('skeleton-arms-idle/left/1.png','skeleton-arms-idle/left/20.png');
+      rarmidle=loadAnimation('skeleton-arms-idle/right/1.png','skeleton-arms-idle/right/20.png');
+      opening=loadAnimation('opening/1.png','opening/17.png');
+      skeledeath=loadAnimation('skeleton-death/1.png','skeleton-death/6.png');
+      larm1=loadImage('skeleton-arms/left/left-1.png');
+      larm2=loadImage('skeleton-arms/left/left-2.png');
+      larm3=loadImage('skeleton-arms/left/left-3.png');
+      larm4=loadImage('skeleton-arms/left/left-4.png');
+      larm5=loadImage('skeleton-arms/left/left-5.png');
+      larm6=loadImage('skeleton-arms/left/left-6.png');
+      larm7=loadImage('skeleton-arms/left/left-7.png');
+      larm8=loadImage('skeleton-arms/left/left-8.png');
+      larm9=loadImage('skeleton-arms/left/left-9.png');
+      larm10=loadImage('skeleton-arms/left/left-10.png');
+      larm11=loadImage('skeleton-arms/left/left-11.png');
+      larm12=loadImage('skeleton-arms/left/left-12.png');
+      larm13=loadImage('skeleton-arms/left/left-13.png');
+      larm14=loadImage('skeleton-arms/left/left-14.png');
+      larm15=loadImage('skeleton-arms/left/left-15.png');
+      larm16=loadImage('skeleton-arms/left/left-16.png');
+      rarm1=loadImage('skeleton-arms/right/right-1.png');
+      rarm2=loadImage('skeleton-arms/right/right-2.png');
+      rarm3=loadImage('skeleton-arms/right/right-3.png');
+      rarm4=loadImage('skeleton-arms/right/right-4.png');
+      rarm5=loadImage('skeleton-arms/right/right-5.png');
+      rarm6=loadImage('skeleton-arms/right/right-6.png');
+      rarm7=loadImage('skeleton-arms/right/right-7.png');
+      rarm8=loadImage('skeleton-arms/right/right-8.png');
+      rarm9=loadImage('skeleton-arms/right/right-9.png');
+      rarm10=loadImage('skeleton-arms/right/right-10.png');
+      rarm11=loadImage('skeleton-arms/right/right-11.png');
+      rarm12=loadImage('skeleton-arms/right/right-12.png');
+      rarm13=loadImage('skeleton-arms/right/right-13.png');
+      rarm14=loadImage('skeleton-arms/right/right-14.png');
+      rarm15=loadImage('skeleton-arms/right/right-15.png');
+      rarm16=loadImage('skeleton-arms/right/right-16.png');
+      maidenidle=loadImage('maiden-idle.png');
+      colliderp=loadImage('collider.png');
+      fireball=loadImage('fireball.png');
+      maidencollider = loadImage('maidencollider.png');
+      titlecard = loadImage('title.png');
+      instructions = loadImage('instructions.png');
+    }
+    function setup(){
+      createCanvas(700,600);
+      frameRate(15);
+      colliders = new Group();
+      colliderleft = createSprite(0,0,60,60);
+      colliderleft.addImage(colliderp);
+      colliderleft.addToGroup(colliders);
+      colliderright = createSprite(0,0,60,60);
+      colliderright.addImage(colliderp);
+      colliderright.addToGroup(colliders);
+      maiden = createSprite(350,300,32,130);
+      var maidenanim = maiden.addAnimation('walking','maiden-animation-cycles/walking/1.png','maiden-animation-cycles/walking/8.png');
+      maiden.addAnimation('limping','maiden-animation-cycles/limping/1.png','maiden-animation-cycles/limping/8.png');
+      maiden.addAnimation('struggling','maiden-animation-cycles/struggling/1.png','maiden-animation-cycles/struggling/8.png');
+      maiden.addAnimation('lossleft','maiden-animation-cycles/hit-left/1.png','maiden-animation-cycles/hit-left/10.png');
+      maiden.addAnimation('lossright','maiden-animation-cycles/hit-right/1.png','maiden-animation-cycles/hit-right/10.png');
+      maiden.addAnimation('death','maiden-animation-cycles/death/1.png','maiden-animation-cycles/death/8.png');
+      fireballs = new Group();
+      maidenc = createSprite(350,400,32,130);
+      maidenc.addImage(maidencollider);
+      ballcoords = [[0,591], [0,540], [0,481], [0,437], [0,410], [0,386], [0,352], [0,309], [0,271], [0,253], [0,215], [0,143], [0,90], [0,34], [31,0], [109,0], [591,0], [669,0], [700,34], [700,90], [700,143], [700,215], [700,253], [700,271], [700,309], [700,352], [700,386], [700,410], [700,437], [700,481], [700,540], [700,591]]
+    }
+    function draw(){
+      if (points<=40){
+      animation(backanim,350,300);
+    } else if (points<=80) {animation(backanim2,350,300);
+    } else {animation(backanim3,350,300);}
+      if (startgame==0){
+        if (song6start==false){
+          songstart=true;
+          song6start=true;
+        }
+        if (songstart){
+          introsong.play();
+          introsong.loop();
+          songstart=false;
+        }
+        image(titlecard,99,0);
+        animation(opening,350,300);
+        if (opening.getFrame()==opening.getLastFrame()){
+          opening.rewind(0);
+          startgame=1;
+        }
+      }
+      if (startgame ==1){
+        image(titlecard,99,0);
+        image(instructions,50,500);
+        animation(body,350,300);
+        animation(larmidle,350,300);
+        animation(rarmidle,350,300);
+        image(maidenidle,100,75);
+        if (mouseIsPressed){
+          maiden.changeAnimation('walking');
+          introsong.stop();
+          mainsong.play();
+          startgame=2;
+        }
+      }
+      if (startgame ==2){
+      animation(body,350,300);
+
+      if (lossleft){
+        maiden.changeAnimation('lossleft');
+        if (maiden.animation.getFrame()==maiden.animation.getLastFrame()){
+          if (hp==2){
+            maiden.animation.rewind(0);
+            maiden.changeAnimation('limping');
+          } else if (hp==1){
+            maiden.animation.rewind(0);
+            maiden.changeAnimation('struggling');
+          } else if (hp<=0){
+            startgame=3;
+          }
+          lossleft=false;
+        }
+      }
+      if (lossright){
+        maiden.changeAnimation('lossright');
+        if (maiden.animation.getFrame()==maiden.animation.getLastFrame()){
+          if (hp==2){
+            maiden.animation.rewind(0);
+            maiden.changeAnimation('limping');
+          } else if (hp==1){
+            maiden.animation.rewind(0);
+            maiden.changeAnimation('struggling');
+          } else if (hp<=0){
+            startgame=3;
+          }
+          lossright=false;
+        }
+      }
+      if (firecounter>=frequency){
+        let ball = int(random(0,32));
+        let xypair = ballcoords[ball];
+        let fx = xypair[0]
+        let fy = xypair[1]
+        f = createSprite(fx,fy,30,30);
+        f.addImage(fireball);
+        if (frequency<=10){
+          frequency = 100;
+          counterdelta+=0.5
+          speed = speed*0.7
+        } else{frequency = frequency-5;}
+        firecounter = 0;
+        f.addToGroup(fireballs);
+      }
+      // right arm movements
+      if (keyIsDown(73)){right=right+1}
+      if (keyIsDown(75)){right=right-1}
+      if (right>16){right=16}
+      if (right<1){right=1}
+      if (right==1){
+        image(rarm1,0,0)
+        colliderright.position.x = 457;
+        colliderright.position.y = 429;
+      } else if (right==2){
+        image(rarm2,0,0)
+        colliderright.position.x = 470;
+        colliderright.position.y = 419;
+      } else if (right==3){
+        image(rarm3,0,0)
+        colliderright.position.x = 506;
+        colliderright.position.y = 400;
+      } else if (right==4){
+        image(rarm4,0,0)
+        colliderright.position.x = 516;
+        colliderright.position.y = 380;
+      } else if (right==5){
+        image(rarm5,0,0)
+        colliderright.position.x = 523;
+        colliderright.position.y = 366;
+      } else if (right==6){
+        image(rarm6,0,0)
+        colliderright.position.x = 527;
+        colliderright.position.y = 350;
+      } else if (right==7){
+        image(rarm7,0,0)
+        colliderright.position.x = 528;
+        colliderright.position.y = 327;
+      } else if (right==8){
+        image(rarm8,0,0)
+        colliderright.position.x = 537;
+        colliderright.position.y = 301;
+      } else if (right==9){
+        image(rarm9,0,0)
+        colliderright.position.x = 535;
+        colliderright.position.y = 282;
+      } else if (right==10){
+        image(rarm10,0,0)
+        colliderright.position.x = 529;
+        colliderright.position.y = 269;
+      } else if (right==11){
+        image(rarm11,0,0)
+        colliderright.position.x = 522;
+        colliderright.position.y = 248;
+      } else if (right==12){
+        image(rarm12,0,0)
+        colliderright.position.x = 542;
+        colliderright.position.y = 208;
+      } else if (right==13){
+        image(rarm13,0,0)
+        colliderright.position.x = 525;
+        colliderright.position.y = 195;
+      } else if (right==14){
+        image(rarm14,0,0)
+        colliderright.position.x = 511;
+        colliderright.position.y = 174;
+      } else if (right==15){
+        image(rarm15,0,0)
+        colliderright.position.x = 499;
+        colliderright.position.y = 159;
+      } else if (right==16){
+        image(rarm16,0,0)
+        colliderright.position.x = 470;
+        colliderright.position.y = 146;
+      }
+      // left arm movements
+      if (keyIsDown(87)){left=left+1}
+      if (keyIsDown(83)){left=left-1}
+      if (left>16){left=16}
+      if (left<1){left=1}
+      if (left==1){
+        image(larm1,0,0)
+        colliderleft.position.x = 243;
+        colliderleft.position.y = 429;
+      } else if (left==2){
+        image(larm2,0,0)
+        colliderleft.position.x = 229;
+        colliderleft.position.y = 419;
+      } else if (left==3){
+        image(larm3,0,0)
+        colliderleft.position.x = 193;
+        colliderleft.position.y =400;
+      } else if (left==4){
+        image(larm4,0,0)
+        colliderleft.position.x =184;
+        colliderleft.position.y =380;
+      } else if (left==5){
+        image(larm5,0,0)
+        colliderleft.position.x = 176;
+        colliderleft.position.y = 366;
+      } else if (left==6){
+        image(larm6,0,0)
+        colliderleft.position.x = 172;
+        colliderleft.position.y = 350;
+      } else if (left==7){
+        image(larm7,0,0)
+        colliderleft.position.x = 171;
+        colliderleft.position.y = 327;
+      } else if (left==8){
+        image(larm8,0,0)
+        colliderleft.position.x = 163;
+        colliderleft.position.y = 301;
+      } else if (left==9){
+        image(larm9,0,0)
+        colliderleft.position.x = 164;
+        colliderleft.position.y = 282;
+      } else if (left==10){
+        image(larm10,0,0)
+        colliderleft.position.x = 171;
+        colliderleft.position.y = 269;
+      } else if (left==11){
+        image(larm11,0,0)
+        colliderleft.position.x = 176;
+        colliderleft.position.y = 248;
+      } else if (left==12){
+        image(larm12,0,0)
+        colliderleft.position.x = 157;
+        colliderleft.position.y = 208;
+      } else if (left==13){
+        image(larm13,0,0)
+        colliderleft.position.x = 174;
+        colliderleft.position.y = 195;
+      } else if (left==14){
+        image(larm14,0,0)
+        colliderleft.position.x = 188;
+        colliderleft.position.y = 174;
+      } else if (left==15){
+        image(larm15,0,0)
+        colliderleft.position.x = 200;
+        colliderleft.position.y = 159;
+      } else if (left==16){
+        image(larm16,0,0)
+        colliderleft.position.x = 231;
+        colliderleft.position.y = 146;
+      }
+      drawSprites()
+      firecounter = firecounter+counterdelta
+      for(f of fireballs){
+        let distancetocenter=0.2*(dist(cx,f.position.x,cy,f.position.y))
+      f.position.x += (cx-f.position.x)/(speed+distancetocenter);
+      f.position.y += (cy-f.position.y)/(speed+distancetocenter);
+      if (f.overlap(colliders)){
+        f.remove();
+        points += 1;
+      }
+      if (f.overlap(maidenc)){
+        hp = hp-1;
+        if (f.position.x<350){
+          lossleft = true;
+        } else {
+          lossright = true;
+        }
+        f.remove();
+      }
+    }
+
+    }
+    if (startgame == 3){
+      mainsong.stop();
+      if (song6start){
+        song6.play();
+        song6.loop();
+        song6start=false;
+      }
+      maiden.changeAnimation('death');
+      animation(skeledeath,350,300);
+      if (skeledeath.getFrame() == skeledeath.getLastFrame()){
+        skelending=true;
+      }
+      if (maiden.animation.getFrame() == maiden.animation.getLastFrame()){
+        ending=true;
+      }
+      if (skelending){
+        skeledeath.goToFrame(skeledeath.getLastFrame());
+      }
+      if (ending){
+        image(finalscore,50,500);
+        textSize(15);
+        push();
+        fill(163,182,211);
+        stroke(21,30,70);
+        strokeWeight(2);
+        text(points,365,532);
+        pop();
+        maiden.animation.goToFrame(maiden.animation.getLastFrame());
+      }
+      for (f of fireballs){
+        f.remove();
+      }
+      drawSprites();
+      if (mouseIsPressed){
+        song6.stop();
+        hp=3;
+        points=0;
+        startgame=0;
+        firecounter=0;
+        frequency=0;
+        counterdelta=1;
+
+      }
+    }
+  }
+    </script>
+</head>
+<body>
+</body>
+</html>
