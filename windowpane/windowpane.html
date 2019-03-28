@@ -1,0 +1,204 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <style>
+    body {
+      background-color:#dee5e5;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      html, body {
+        height:100%;
+      }
+    </style>
+
+    <title>WINDOWPANE</title>
+    <script src="p5.js"></script>
+    <script src="p5.sound.js"></script>
+    <div class="Aligner">
+    <script>
+    var mountainsx=-1600
+    var lakex=-1600
+    var clouds1x=-1600
+    var clouds2x=-1600
+    var trees1x=-1600
+    var trees2x=-1600
+    var trees3x=-1600
+    var sticks1x=-1600
+    var sticks2x=-1600
+    var railx=-1600
+    var fingerradius=15
+    var thishum=true;
+    var songstart=true;
+    function preload(){
+      sky=loadImage('background-s/sky.png');
+      clouds1=loadImage('background-s/clouds1.png');
+      clouds2=loadImage('background-s/clouds2.png');
+      mountains=loadImage('background-s/mountains.png');
+      lake=loadImage('background-s/lake.png');
+      trees1=loadImage('background-s/trees1.png');
+      trees2=loadImage('background-s/trees2.png');
+      trees3=loadImage('background-s/trees3.png');
+      sticks1=loadImage('background-s/sticks1.png');
+      sticks2=loadImage('background-s/sticks2.png');
+      rail=loadImage('background-s/rail.png');
+      road=loadImage('background-s/road.png');
+      border=loadImage('background-s/border.png');
+      skyb=loadImage('background-s-blurred/sky.png');
+      clouds1b=loadImage('background-s-blurred/clouds1.png');
+      clouds2b=loadImage('background-s-blurred/clouds2.png');
+      mountainsb=loadImage('background-s-blurred/mountains.png');
+      lakeb=loadImage('background-s-blurred/lake.png');
+      trees1b=loadImage('background-s-blurred/trees1.png');
+      trees2b=loadImage('background-s-blurred/trees2.png');
+      trees3b=loadImage('background-s-blurred/trees3.png');
+      sticks1b=loadImage('background-s-blurred/sticks1.png');
+      sticks2b=loadImage('background-s-blurred/sticks2.png');
+      railb=loadImage('background-s-blurred/rail.png');
+      roadb=loadImage('background-s-blurred/road.png');
+      hum1=loadSound('clips/hum1.mp3');
+      hum2=loadSound('clips/hum2.mp3');
+      hum3=loadSound('clips/hum3.mp3');
+      hum4=loadSound('clips/hum4.mp3');
+      ambient=loadSound('clips/ambient.mp3');
+    }
+    function setup(){
+      createCanvas(400,350);
+      // Create three layers, two of which hold the backgrounds
+      // and the third (fingerdrawlayer) is the "layer mask".
+      blurrylayer = createGraphics(400,350);
+      nonblurrylayer = createGraphics(400,350);
+      fingerdrawlayer = createGraphics(400,350);
+      hums = [hum1,hum2,hum3,hum4];
+      frameRate(30);
+    }
+    function draw(){
+      if (songstart){
+        ambient.play();
+        ambient.loop();
+        songstart=false;}
+      // Fill BOTH background layers with stuf
+      blurrylayer.image(skyb,0,0);
+      blurrylayer.image(clouds1b,clouds1x,0);
+      blurrylayer.image(clouds2b,clouds2x,0);
+      blurrylayer.image(mountainsb,mountainsx,0);
+      blurrylayer.image(lakeb,0,0);
+      blurrylayer.image(trees1b,trees1x,0);
+      blurrylayer.image(trees2b,trees2x,0);
+      blurrylayer.image(trees3b,trees3x,0);
+      blurrylayer.image(sticks1b,sticks1x,0);
+      blurrylayer.image(sticks2b,sticks2x,0);
+      blurrylayer.image(railb,railx,0);
+      blurrylayer.image(roadb,0,0);
+
+      nonblurrylayer.image(sky,0,0);
+      nonblurrylayer.image(clouds1,clouds1x,0);
+      nonblurrylayer.image(clouds2,clouds2x,0);
+      nonblurrylayer.image(mountains,mountainsx,0);
+      nonblurrylayer.image(lake,0,0);
+      nonblurrylayer.image(trees1,trees1x,0);
+      nonblurrylayer.image(trees2,trees2x,0);
+      nonblurrylayer.image(trees3,trees3x,0);
+      nonblurrylayer.image(sticks1,sticks1x,0);
+      nonblurrylayer.image(sticks2,sticks2x,0);
+      nonblurrylayer.image(rail,railx,0);
+      nonblurrylayer.image(road,0,0);
+
+      // Now use some trickery to fade out the layer mask just a bit.
+      // We can't just draw a semitransparent background normally because
+      // that would eventually result in a fully opaque image.
+      // The transparency matters to control blending later on so we use
+      // some trickery (destination-out) to operate with transparency instead.
+      // Setting source-over returns our drawing back to normal.
+      fingerdrawlayer.drawingContext.globalCompositeOperation="destination-out";
+      fingerdrawlayer.background(255,5);
+      fingerdrawlayer.drawingContext.globalCompositeOperation="source-over";
+
+      // Draw our finger! Color does not actually matter - we're only using the
+      // alpha in the next step.
+      if (mouseIsPressed){
+        fingerdrawlayer.strokeWeight(fingerradius);
+        fingerdrawlayer.line(mouseX,mouseY,pmouseX,pmouseY);
+        if (thishum){
+          hums[int(random(0,4))].play();
+          thishum=false;
+        }
+        if (fingerradius<=30){
+          fingerradius=fingerradius+0.2;
+        }
+      } else {
+        fingerradius=15;
+        thishum=true;
+      }
+
+      // Now comes the trickery!
+
+      // Clear is necessary instead of background to reset the transparency of
+      // the canvas which we will use.
+      clear();
+
+      // Draw our touches first. This will set the desired transparency.
+      drawingContext.globalCompositeOperation="source-over";
+      image(fingerdrawlayer,0,0);
+
+      // Use the transparency of what is currently drawn as a "mask", drawing
+      // nonblurrylayer only where fingerdrawlayer is opaque
+      drawingContext.globalCompositeOperation="source-in";
+      image(nonblurrylayer,0,0);
+
+      // Put the blurry layer behind everything
+      drawingContext.globalCompositeOperation="destination-over";
+      image(blurrylayer,0,0);
+
+      // Restore things to what they were and draw the border
+      drawingContext.globalCompositeOperation="source-over";
+      image(border,0,0);
+
+      if(key=="5"){image(nonblurrylayer,0,0);return;} // Press the [5] key to see the nonblurrylayer by itself
+
+      //Move both backgrounds
+      clouds1x=clouds1x+1
+      clouds2x=clouds2x+3
+      mountainsx=mountainsx+5;
+      trees1x=trees1x+10;
+      trees2x=trees2x+20;
+      trees3x=trees3x+30;
+      sticks1x=sticks1x+40;
+      sticks2x=sticks2x+60;
+      railx=railx+75;
+      if (clouds1x>=0){
+        clouds1x=-1600;
+      }
+      if (clouds2x>=0){
+        clouds2x=-1600;
+      }
+      if (mountainsx>=0){
+        mountainsx=-1600;
+      }
+      if (trees1x>=0){
+        trees1x=-1600;
+      }
+      if (trees2x>=0){
+        trees2x=-1600;
+      }
+      if (trees3x>=0){
+        trees3x=-1600;
+      }
+      if (sticks1x>=0){
+        sticks1x=-1600;
+      }
+      if (sticks2x>=0){
+        sticks2x=-1600;
+      }
+      if (railx>=0){
+        railx=-1600;
+      }
+    }
+    </script>
+  </div>
+</head>
+<body>
+
+</body>
+</html>
