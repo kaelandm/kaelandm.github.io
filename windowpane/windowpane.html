@@ -18,6 +18,7 @@
     <script src="p5.sound.js"></script>
     <div class="Aligner">
     <script>
+    var textbox=0
     var mountainsx=-1600
     var lakex=-1600
     var clouds1x=-1600
@@ -31,6 +32,10 @@
     var fingerradius=15
     var thishum=true;
     var songstart=true;
+    var blurb='You’ve been on this bus for four hours and only now do you realize how nervous you are. Was this a bad idea? Was this a mistake? What if things go wrong? Briefly - for a split second or half an hour, it’s hard to tell - you entertain the idea of shouting until the bus stops, getting out, and running home. You could be safe and warm right now but you’re here, and home is getting farther away by the second. Why again did you decide to do this? Why now?';
+    var blurb2='It doesn’t matter anymore. For whatever reason, you’ve locked in to your choice. All you can do now is sit in this suspended animation for another four hours and wait for the consequences of your decision. Behind the fog of the window, the world passes by in a blur. Without thinking, you press a finger against the glass. You lift your hand and watch the circle disappear into the fog.';
+    var blurb3='You’ve always liked drawing pictures on windowpanes.';
+    var blurb4='Best in a quiet place with headphones. Click to start.';
     function preload(){
       sky=loadImage('background-s/sky.png');
       clouds1=loadImage('background-s/clouds1.png');
@@ -193,6 +198,26 @@
       }
       if (railx>=0){
         railx=-1600;
+      }
+      if (textbox==0){
+        push();
+        rectMode(CENTER);
+        strokeWeight(5);
+        stroke('#0b3954');
+        fill('#bdcccf');
+        rect(200,175,350,300);
+        pop();
+        fill('#0b3954');
+        textFont('Arial');
+        textAlign(CENTER,TOP);
+        textSize(11);
+        text(blurb,50,50,300,290);
+        text(blurb2,50,165,300,290);
+        text(blurb3,50,270,300,290);
+        text(blurb4,50,290,300,290);
+        if (mouseIsPressed){
+          textbox=1;
+        }
       }
     }
     </script>
