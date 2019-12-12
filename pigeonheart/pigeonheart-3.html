@@ -52,6 +52,7 @@
         stickpiece = loadImage('stickpiece.png');
         nestpiece = loadImage('nestpiece.png');
         eggpiece = loadImage('eggpiece.png');
+        gamerules = loadImage('gamerules.png');
         
     }
     function setup(){
@@ -173,7 +174,7 @@
             text('Player 1 score: ' + player1score,560,140);
             text('Player 2 score: ' + player2score,560,300);
         }
-
+        strokeWeight(3);
         // display the grid over top of the pieces
         for (let i=0;i<6;i=i+1){
             for (let j=0;j<6;j=j+1){
