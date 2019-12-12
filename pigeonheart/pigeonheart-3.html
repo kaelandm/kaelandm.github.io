@@ -184,6 +184,9 @@
         if (gamestate=='start'){
             image(startpic,0,0);
         } 
+        if (gamestate=='rules'){
+            image(gamerules,0,0);
+        }
     }
 
     // color for player 1 token
@@ -217,8 +220,10 @@
         clickedY=int(mouseY/p);
         if (gamestate=='turn'){
             turn(clickedX, clickedY);
-        } else if (gamestate=='start'){
+        } else if (gamestate=='rules'){
             gamestate='turn';
+        } else if (gamestate=='start'){
+            gamestate='rules';
         } else if (gamestate=='stick'){
             // if the player clicks the same square a second time, and it's on a boundary, it'll knock the piece off the side and give the player points
             if (boundarystick(clickedX,clickedY)){
