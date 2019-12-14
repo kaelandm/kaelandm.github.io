@@ -1,0 +1,1388 @@
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <title>PIGEONHEART</title>
+    <script src="p5.js"></script>
+    <script>
+        // declaring variables! 
+        // location markers for the players
+        var player1x=0, player1y=0, player2x=0, player2y=0;
+        var player3x=0, player3y=0, player4x=0, player4y=0;
+        // variable that remembers whose turn it is
+        var playerturn = 1;
+        // variable that keeps score
+        var player1score = 0, player2score = 0, player3score = 0, player4score=0;
+        var player1pieces = [];
+        var player2pieces = [];
+        var player3pieces = [];
+        var player4pieces = [];
+        // variables that remember the location of the last-clicked stick, nest and egg
+        var oldstickx=0;
+        var oldsticky=0;
+        var oldnestx=0;
+        var oldnesty=0;
+        var oldeggx=0;
+        var oldeggy=0;
+        // variable that remembers the game state (turn, stick, nest, egg)
+        var gamestate='start';
+        // array that keeps track of the locations of the players and all items
+        var grid = [
+            [11,0,1,1,0,2],
+            [0,1,1,1,3,0],
+            [1,1,3,2,1,1],
+            [1,1,2,3,1,1],
+            [0,3,1,1,2,0],
+            [2,0,1,1,0,12]
+        ];        
+        // array that keeps track of location indicators when in stick/nest/egg modes
+        var indicators = [];
+        var gridmaker = [];
+        // array that keeps track of boundary indicators when in stick/nest/egg modes
+        var bindicators = [];
+        // p is the width of each grid square (right now it's 88)
+        var p=88;
+        var pp=38;
+        // these counters help the indicator and bindicator maker functions work properly
+        var indicatorcounter = 0;
+        var bindicatorcounter = 0;
+        var stickcounter = 0;
+        var nestcounter = 0;
+        var eggcounter = 0;
+    function preload(){
+        startpic = loadImage('https://kaelandm.github.io/pigeonheart/startpic.png');
+        player1piece = loadImage('https://kaelandm.github.io/pigeonheart/player1piece.png');
+        player2piece = loadImage('https://kaelandm.github.io/pigeonheart/player2piece.png');
+        player3piece = loadImage('https://kaelandm.github.io/pigeonheart/player3piece.png');
+        player4piece = loadImage('https://kaelandm.github.io/pigeonheart/player4piece.png');
+        stickpiece = loadImage('https://kaelandm.github.io/pigeonheart/stickpiece.png');
+        nestpiece = loadImage('https://kaelandm.github.io/pigeonheart/nestpiece.png');
+        eggpiece = loadImage('https://kaelandm.github.io/pigeonheart/eggpiece.png');
+        gamerules = loadImage('https://kaelandm.github.io/pigeonheart/gamerules.png');
+        
+    }
+    function setup(){
+        createCanvas(800,528);
+        gridmaker = [int(random(1,101)),int(random(1,101)),int(random(1,101)),int(random(1,101)),int(random(1,101)),int(random(1,101)),int(random(1,101)),int(random(1,101))];
+    }
+    function draw(){
+        background(133,138,158);
+        // display the current position of all objects
+        grid.forEach(function(rowofgrid, y){
+            rowofgrid.forEach(function(colofgrid,x){
+                if (grid[y][x]==1){
+                    stick((x*p),(y*p),p);
+                    stickcounter+=1;
+                } else if (grid[y][x]==2){
+                    nest((x*p),(y*p),p);
+                    nestcounter+=1;
+                } else if (grid[y][x]==3){
+                    egg((x*p),(y*p),p);
+                    eggcounter+=1;
+                } else if (grid[y][x]==11){
+                    player1((x*p),(y*p),p);
+                    player1x=x;
+                    player1y=y;
+                } else if (grid[y][x]==12){
+                    player2((x*p),(y*p),p);
+                    player2x=x;
+                    player2y=y;
+                } else if (grid[y][x]==13){
+                    player3((x*p),(y*p),p);
+                    player3x=x;
+                    player3y=y;
+                } else if (grid[y][x]==14){
+                    player4((x*p),(y*p),p);
+                    player4x=x;
+                    player4y=y;
+                }
+            })
+        })
+        if (endgamecheck(stickcounter,nestcounter,eggcounter)){
+                gamestate = 'endgame';
+            } else {
+                stickcounter=0;
+                nestcounter=0;
+                eggcounter=0;
+            }
+        push();
+        player1pieces.forEach(function(piecedisplay, p1piececounter){
+            if (player1pieces[p1piececounter]==1){
+                fill(246,227,234);
+                square(550+(pp*(p1piececounter%6)),157+(pp*int(p1piececounter/6)),pp);
+            } else if (player1pieces[p1piececounter]==2){
+                fill(226,187,209);
+                square(550+(pp*(p1piececounter%6)),157+(pp*int(p1piececounter/6)),pp);
+            } else if (player1pieces[p1piececounter]==3){
+                fill(197,142,193);
+                square(550+(pp*(p1piececounter%6)),157+(pp*int(p1piececounter/6)),pp);
+            } else if (player1pieces[p1piececounter]==4){
+                fill(148,98,166);
+                square(550+(pp*(p1piececounter%6)),157+(pp*int(p1piececounter/6)),pp);
+            } 
+        })
+        player2pieces.forEach(function(piecedisplay, p2piececounter){
+            if (player2pieces[p2piececounter]==1){
+                fill(246,227,234);
+                square(550+(pp*(p2piececounter%6)),317+(pp*int(p2piececounter/6)),pp);
+            } else if (player2pieces[p2piececounter]==2){
+                fill(226,187,209);
+                square(550+(pp*(p2piececounter%6)),317+(pp*int(p2piececounter/6)),pp);
+            } else if (player2pieces[p2piececounter]==3){
+                fill(197,142,193);
+                square(550+(pp*(p2piececounter%6)),317+(pp*int(p2piececounter/6)),pp);
+            } else if (player2pieces[p2piececounter]==4){
+                fill(148,98,166);
+                square(550+(pp*(p2piececounter%6)),317+(pp*int(p2piececounter/6)),pp);
+            } 
+        })
+        pop();
+        // display indicators when in stick, nest or egg state
+        indicators.forEach(function(indicatormaker){
+            push();
+            noStroke();
+            fill(255);
+            square((((indicators[indicatorcounter][0])*p)+(p*0.25)),(((indicators[indicatorcounter][1])*p)+(p*0.25)),p*0.5);
+            pop();
+            indicatorcounter+=1;
+            if (indicatorcounter==(indicators.length)){
+                indicatorcounter=0;
+            }
+        })
+        // display boundary indicators when in stick, nest or egg state
+        bindicators.forEach(function(bindicatormaker){
+            push();
+            noStroke();
+            fill(255);
+            triangle(p*(bindicators[bindicatorcounter][0]),p*(bindicators[bindicatorcounter][1]),p*(bindicators[bindicatorcounter][2]),p*(bindicators[bindicatorcounter][3]),p*(bindicators[bindicatorcounter][4]),p*(bindicators[bindicatorcounter][5]));
+            pop();
+            bindicatorcounter+=1;
+            if (bindicatorcounter==(bindicators.length)){
+                bindicatorcounter=0;
+            }
+        })
+        
+        // display text for the current player's turn
+        stroke(255,255,255);
+        strokeWeight(2);
+        noFill();
+        textSize(24);
+        if (gamestate=='endgame'){
+            if (player1score>player2score){
+                text('Player 1 wins!',560,90);
+                text('Player 1 score: ' + player1score,560,140);
+                text('Player 2 score: ' + player2score,560,300);
+                text('Refresh to restart',550,500);
+            } else if (player2score>player1score){
+                text('Player 2 wins!',560,90);
+                text('Player 1 score: ' + player1score,560,140);
+                text('Player 2 score: ' + player2score,560,300);
+                text('Refresh to restart',560,500);
+            } else {
+                text('Tie!',560,90);
+                text('Player 1 score: ' + player1score,560,140);
+                text('Player 2 score: ' + player2score,560,300);
+                text('Refresh to restart',560,500);
+            }
+        } else {
+            text('Player ' + playerturn + '"s turn',560,90);
+            text('Player 1 score: ' + player1score,560,140);
+            text('Player 2 score: ' + player2score,560,300);
+        }
+        strokeWeight(3);
+        // display the grid over top of the pieces
+        for (let i=0;i<6;i=i+1){
+            for (let j=0;j<6;j=j+1){
+                square((i*p),(j*p),p);
+            }
+        }
+        if (gamestate=='start'){
+            image(startpic,0,0);
+        } 
+        if (gamestate=='rules'){
+            image(gamerules,0,0);
+        }
+        if (gamestate=='playerselect'){
+            fill(133,138,158);
+            rect(0,0,800,528);
+            fill(255);
+            text('How many players?',290,150);
+            text('2',123,250);
+            text('3',389,250);
+            text('4',655,250);
+            player2(89,300);
+            player3(355,300);
+            player4(621,300);
+        }
+    }
+
+    // picture for player 1 token
+    function player1(p1x,p1y){
+        image(player1piece,p1x,p1y);
+    }
+
+    // picture for player 2 token
+    function player2(p2x,p2y){
+        image(player2piece,p2x,p2y);
+    }
+
+    // picture for player 3 token
+    function player3(p3x,p3y){
+        image(player3piece,p3x,p3y);
+    }
+
+    // picture for player 4 token
+    function player4(p4x,p4y){
+        image(player4piece,p4x,p4y);
+    }
+
+    // picture for stick token
+    function stick(sx,sy){
+        image(stickpiece,sx,sy);
+    }
+
+    // picture for nest token
+    function nest(nx,ny){
+        image(nestpiece,nx,ny);
+    }
+
+    // picture for egg token
+    function egg(ex,ey){
+        image(eggpiece,ex,ey);
+    }
+
+    // when the mouse is clicked, this function gets the X and Y value of the click, determines what the game state is, and uses the appropriate function
+    function mouseClicked(){
+        clickedX=int(mouseX/p);
+        clickedY=int(mouseY/p);
+        if (gamestate=='turn'){
+            turn(clickedX, clickedY);
+        } else if (gamestate=='playerselect'){
+            if (mouseX<267){
+                playernumber=2;
+            } else if (mouseX<534){
+                playernumber=3;
+                grid[0][5]=13;
+            } else {
+                playernumber=4;
+                grid[0][5]=13;
+                grid[5][0]=14;
+            }
+            gridgen();
+            gamestate='turn';
+        } else if (gamestate=='rules'){
+            gamestate='playerselect';
+        } else if (gamestate=='start'){
+            gamestate='rules';
+        } else if (gamestate=='stick'){
+            // if the player clicks the same square a second time, and it's on a boundary, it'll knock the piece off the side and give the player points
+            if (boundarystick(clickedX,clickedY)){
+                indicators=[];
+                bindicators=[];
+                gamestate='turn';
+            } else {
+               // this for loop checks if the player clicked a space with an indicator; if not, it returns to the 'turn' state and lets the player pick another direction
+                for (var i=0;i<indicators.length+1;i++){
+                    if (i==indicators.length){
+                            indicators=[];
+                            bindicators=[];
+                            gamestate='turn';
+                    } else if (indicators[i][0]==clickedX){
+                        if (indicators[i][1]==clickedY){
+                            stickclick(clickedX, clickedY);
+                            break;
+                        } 
+                    } 
+                }
+            }
+        } else if (gamestate=='nest'){
+            // if the player clicks the same square a second time, and it's on a boundary, it'll knock the piece off the side and give the player points
+            if (boundarynest(clickedX,clickedY)){
+                indicators=[];
+                bindicators=[];
+                gamestate='turn';
+            } else {
+                // this for loop checks if the player clicked a space with an indicator; if not, it returns to the 'turn' state and lets the player pick another direction
+                for (var i=0;i<indicators.length+1;i++){
+                    if (i==indicators.length){
+                        indicators=[];
+                        bindicators=[];
+                        gamestate='turn';
+                    } else if (indicators[i][0]==clickedX){
+                        if (indicators[i][1]==clickedY){
+                            nestclick(clickedX, clickedY);
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (gamestate=='egg'){
+            // if the player clicks the same square a second time, and it's on a boundary, it'll knock the piece off the side and give the player points
+            if (boundaryegg(clickedX,clickedY)){
+                indicators=[];
+                bindicators=[];
+                gamestate='turn';
+            } else {
+                // this for loop checks if the player clicked a space with an indicator; if not, it returns to the 'turn' state and lets the player pick another direction
+                for (var i=0;i<indicators.length+1;i++){
+                    if (i==indicators.length){
+                            indicators=[];
+                            bindicators=[];
+                            gamestate='turn';
+                    } else if (indicators[i][0]==clickedX){
+                        if (indicators[i][1]==clickedY){
+                            eggclick(clickedX, clickedY);
+                            break;
+                        }
+                    }
+                }
+            }
+        } 
+    }
+
+// this function handles initial movement at the beginning of a player's turn (ie. before they've clicked on a stick, nest or egg)
+    function turn(tx,ty){
+        if (playerturn==1){
+            if (player1y==ty){
+                // moving to the left
+                if ((player1x-1)==tx){
+                    if (grid[player1y][tx]>11){
+                    } else if (grid[player1y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player1y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[player1y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                    // moving to the right
+                } else if ((player1x+1)==tx){
+                    if (grid[player1y][tx]>11){
+
+                    } else if (grid[player1y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorright(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player1y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorright(tx,ty);
+                        gamestate='nest';
+
+                    } else if (grid[player1y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorright(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                } 
+            } else if (player1x==tx){
+                // moving up
+                if ((player1y-1)==ty){
+                    if (grid[ty][player1x]>11){
+                        } else if (grid[ty][player1x]==1){
+                            oldstickx=tx;
+                            oldsticky=ty;
+                            indicatorup(tx,ty);
+                            gamestate='stick';
+                        } else if (grid[ty][player1x]==2){
+                            oldnestx=tx;
+                            oldnesty=ty;
+                            indicatorup(tx,ty);
+                            gamestate='nest';
+                        } else if (grid[ty][player1x]==3){
+                            oldeggx=tx;
+                            oldeggy=ty;
+                            indicatorup(tx,ty);
+                            gamestate='egg';
+                        }
+                        else { 
+                            playermovement(tx,ty);
+                        }
+                // moving down
+                } else if ((player1y+1)==ty){
+                    if (grid[ty][player1x]>11){
+                    } else if (grid[ty][player1x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatordown(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player1x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatordown(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player1x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatordown(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                }
+            }
+        } else if (playerturn==2){
+            if (player2y==ty){
+                if ((player2x-1)==tx){
+                    if (grid[player2y][tx]==11){
+                    } else if (grid[player2y][tx]>12){
+                    } else if (grid[player2y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player2y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='nest';
+
+                    } else if (grid[player2y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                } else if ((player2x+1)==tx){
+                    if (grid[player2y][tx]==11){
+                    } else if (grid[player2y][tx]>12){
+                    } else if (grid[player2y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorright(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player2y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorright(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[player2y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorright(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                }
+            } else if (player2x==tx){
+                if ((player2y-1)==ty){
+                    if (grid[ty][player2x]==11){
+                    } else if (grid[ty][player2x]>12){
+                    } else if (grid[ty][player2x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorup(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player2x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorup(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player2x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorup(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                } else if ((player2y+1)==ty){
+                    if (grid[ty][player2x]==11){
+                    } else if (grid[ty][player2x]>12){
+                    } else if (grid[ty][player2x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatordown(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player2x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatordown(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player2x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatordown(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                }
+            }
+        } else if (playerturn==3){
+            if (player3y==ty){
+                // moving to the left
+                if ((player3x-1)==tx){
+                    if (grid[player3y][tx]==11){
+                    } else if (grid[player3y][tx]==12){
+                    } else if (grid[player3y][tx]==14){
+                    } else if (grid[player3y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player3y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[player3y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                    // moving to the right
+                } else if ((player3x+1)==tx){
+                    if (grid[player3y][tx]==11){
+                    } else if (grid[player3y][tx]==12){
+                    } else if (grid[player3y][tx]==14){
+                    } else if (grid[player3y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorright(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player3y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorright(tx,ty);
+                        gamestate='nest';
+
+                    } else if (grid[player3y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorright(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                } 
+            } else if (player3x==tx){
+                // moving up
+                if ((player3y-1)==ty){
+                    if (grid[ty][player3x]==11){
+                    } else if (grid[ty][player3x]==12){
+                    } else if (grid[ty][player3x]==14){
+                    } else if (grid[ty][player3x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorup(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player3x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorup(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player3x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorup(tx,ty);
+                        gamestate='egg';
+                    }
+                    else { 
+                        playermovement(tx,ty);
+                    }
+                // moving down
+                } else if ((player3y+1)==ty){
+                    if (grid[ty][player3x]==11){
+                    } else if (grid[ty][player3x]==12){
+                    } else if (grid[ty][player3x]==14){
+                    } else if (grid[ty][player3x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatordown(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player3x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatordown(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player3x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatordown(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                }
+            }
+        } else if (playerturn==4){
+            if (player4y==ty){
+                // moving to the left
+                if ((player4x-1)==tx){
+                    if (grid[player4y][tx]==11){
+                    } else if (grid[player4y][tx]==12){
+                    } else if (grid[player4y][tx]==13){
+                    } else if (grid[player4y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player4y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[player4y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorleft(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                    // moving to the right
+                } else if ((player4x+1)==tx){
+                    if (grid[player4y][tx]==11){
+                    } else if (grid[player4y][tx]==12){
+                    } else if (grid[player4y][tx]==13){
+                    } else if (grid[player4y][tx]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorright(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[player4y][tx]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorright(tx,ty);
+                        gamestate='nest';
+
+                    } else if (grid[player4y][tx]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorright(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                } 
+            } else if (player4x==tx){
+                // moving up
+                if ((player4y-1)==ty){
+                    if (grid[ty][player4x]==11){
+                    } else if (grid[ty][player4x]==12){
+                    } else if (grid[ty][player4x]==13){
+                    } else if (grid[ty][player4x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatorup(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player4x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatorup(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player4x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatorup(tx,ty);
+                        gamestate='egg';
+                    }
+                    else { 
+                        playermovement(tx,ty);
+                    }
+                // moving down
+                } else if ((player4y+1)==ty){
+                    if (grid[ty][player4x]==11){
+                    } else if (grid[ty][player4x]==12){
+                    } else if (grid[ty][player4x]==13){
+                    } else if (grid[ty][player4x]==1){
+                        oldstickx=tx;
+                        oldsticky=ty;
+                        indicatordown(tx,ty);
+                        gamestate='stick';
+                    } else if (grid[ty][player4x]==2){
+                        oldnestx=tx;
+                        oldnesty=ty;
+                        indicatordown(tx,ty);
+                        gamestate='nest';
+                    } else if (grid[ty][player4x]==3){
+                        oldeggx=tx;
+                        oldeggy=ty;
+                        indicatordown(tx,ty);
+                        gamestate='egg';
+                    }
+                    else {
+                        playermovement(tx,ty);
+                    }
+                }
+            }
+        }
+    }
+
+    // this function handles what happens if the player moves a stick 
+    function stickclick(sx,sy){
+        if (grid[sy][sx]==0){
+            playermovement(oldstickx,oldsticky);
+            grid[sy][sx]=1;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==1){
+            playermovement(oldstickx,oldsticky);
+            grid[sy][sx]=2;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==2){
+            playermovement(oldstickx,oldsticky);
+            grid[sy][sx]=2;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==3){
+            playermovement(oldstickx,oldsticky);
+            grid[sy][sx]=3;
+            indicators = [];
+            bindicators=[];
+        }
+    }
+
+    // this function handles what happens if the player moves a nest
+    function nestclick(sx,sy){
+        if (grid[sy][sx]==0){
+            playermovement(oldnestx,oldnesty);
+            grid[sy][sx]=2;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==1){
+            playermovement(oldnestx,oldnesty);
+            grid[sy][sx]=2;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==2){
+            playermovement(oldnestx,oldnesty);
+            grid[sy][sx]=3;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==3){
+            playermovement(oldnestx,oldnesty);
+            grid[sy][sx]=3;
+            indicators = [];
+            bindicators=[];
+        }
+    }
+
+    // this function handles what happens if the player moves an egg
+    function eggclick(sx,sy){
+        if (grid[sy][sx]==0){
+            playermovement(oldeggx,oldeggy);
+            grid[sy][sx]=3;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==1){
+            playermovement(oldeggx,oldeggy);
+            grid[sy][sx]=3;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==2){
+            playermovement(oldeggx,oldeggy);
+            grid[sy][sx]=3;
+            indicators = [];
+            bindicators=[];
+        } else if (grid[sy][sx]==3){
+            // if two eggs collide, they disappear and give the player four points
+            if (playerturn==1){
+                player1score+=4;
+                player1pieces.push(4);
+            } else {
+                player2score+=4;
+                player2pieces.push(4);
+            }
+            playermovement(oldeggx,oldeggy);
+            grid[sy][sx]=0;
+            indicators = [];
+            bindicators=[];
+        }
+    }
+
+    // this function creates indicators or boundary indicators when the player moves to the left
+    function indicatorleft(tx,ty){
+        if ((tx-1)<0){
+            bindicators.push([tx,ty+0.5,tx+0.25,ty+0.25,tx+0.25,ty+0.75]);
+         } else if (grid[ty][(tx-1)]>10){
+            
+        }  else {
+            indicators.push([(tx-1),ty]);
+        } 
+        if ((ty+1)>5){
+            bindicators.push([tx+0.5,ty+1,tx+0.25,ty+0.75,tx+0.75,ty+0.75]);
+
+        } else if (grid[ty+1][tx]>10){
+
+        } else {
+            indicators.push([tx,(ty+1)]);
+        }
+        if ((ty-1)<0){
+            bindicators.push([tx+0.5,ty,tx+0.25,ty+0.25,tx+0.75,ty+0.25]);
+
+        } else if (grid[ty-1][tx]>10){
+
+        } else {
+            indicators.push([tx,(ty-1)]);
+        }
+    }
+
+    // this function creates indicators and boundary indicators when the player moves to the right
+    function indicatorright(tx,ty){
+        if ((tx+1)>5){
+            bindicators.push([tx+1,ty+0.5,tx+0.75,ty+0.25,tx+0.75,ty+0.75]);
+            
+        } else if (grid[ty][(tx+1)]>10){
+
+        } else {
+            indicators.push([(tx+1),ty]);
+        }
+        if ((ty+1)>5){
+            bindicators.push([tx+0.5,ty+1,tx+0.25,ty+0.75,tx+0.75,ty+0.75]);
+
+        } else if (grid[ty+1][tx]>10){
+
+        } else {
+            indicators.push([tx,(ty+1)]);
+        }
+        if ((ty-1)<0){
+            bindicators.push([tx+0.5,ty,tx+0.25,ty+0.25,tx+0.75,ty+0.25]);
+
+        } else if (grid[ty-1][tx]>10){
+
+        } else {
+            indicators.push([tx,(ty-1)]);
+        }
+    }
+
+    // this function creates indicators and boundary indicators when the player moves up
+    function indicatorup(tx,ty){
+        if ((tx-1)<0){
+            bindicators.push([tx,ty+0.5,tx+0.25,ty+0.25,tx+0.25,ty+0.75]);
+        } else if (grid[ty][(tx-1)]>10){
+
+        } else {
+            indicators.push([(tx-1),ty]);
+        }
+        if ((tx+1)>5){
+            bindicators.push([tx+1,ty+0.5,tx+0.75,ty+0.25,tx+0.75,ty+0.75]);
+
+        } else if (grid[ty][tx+1]>10){
+
+        } else {
+            indicators.push([(tx+1),ty]);
+        }
+        if ((ty-1)<0){
+            bindicators.push([tx+0.5,ty,tx+0.25,ty+0.25,tx+0.75,ty+0.25]);
+        } else if (grid[ty-1][tx]>10){
+
+        } else {
+            indicators.push([tx,(ty-1)]);
+        }
+    }
+
+    // this function creates indicators and boundary indicators when the player moves down
+    function indicatordown(tx,ty){
+        if ((tx-1)<0){
+            bindicators.push([tx,ty+0.5,tx+0.25,ty+0.25,tx+0.25,ty+0.75]);
+        } else if (grid[ty][(tx-1)]>10){
+
+        } else {
+            indicators.push([(tx-1),ty]);
+        }
+        if ((tx+1)>5){
+            bindicators.push([tx+1,ty+0.5,tx+0.75,ty+0.25,tx+0.75,ty+0.75]);
+        } else if (grid[ty][tx+1]>10){
+
+        } else {
+            indicators.push([tx+1,ty]);
+        }
+        if ((ty+1)>5){
+            bindicators.push([tx+0.5,ty+1,tx+0.25,ty+0.75,tx+0.75,ty+0.75]);
+
+        } else if (grid[ty+1][tx]>10){
+
+        } else {
+            indicators.push([tx,(ty+1)]);
+        }
+    }
+
+    // this function handles all the end of turn stuff: it moves the player's token, makes it the other player's turn and returns the game state to 'turn'
+    function playermovement(px,py){
+        if (playernumber==2){
+            if (playerturn==1){
+                grid[player1y][player1x]=0;
+                player1x=px;
+                player1y=py;
+                grid[player1y][player1x]=11;
+                playerturn=2;
+                gamestate='turn';
+            } else if (playerturn==2){
+                grid[player2y][player2x]=0;
+                    player2x=px;
+                    player2y=py;
+                    grid[player2y][player2x]=12;
+                    playerturn=1;
+                    gamestate='turn';
+            }
+        } else if (playernumber==3){
+            if (playerturn==1){
+                grid[player1y][player1x]=0;
+                player1x=px;
+                player1y=py;
+                grid[player1y][player1x]=11;
+                playerturn=2;
+                gamestate='turn';
+            } else if (playerturn==2){
+                grid[player2y][player2x]=0;
+                    player2x=px;
+                    player2y=py;
+                    grid[player2y][player2x]=12;
+                    playerturn=3;
+                    gamestate='turn';
+            } else if (playerturn==3){
+                grid[player3y][player3x]=0;
+                player3x=px;
+                player3y=py;
+                grid[player3y][player3x]=13;
+                playerturn=1;
+                gamestate='turn';
+            } 
+        } else if (playernumber==4){
+            if (playerturn==1){
+                grid[player1y][player1x]=0;
+                player1x=px;
+                player1y=py;
+                grid[player1y][player1x]=11;
+                playerturn=2;
+                gamestate='turn';
+            } else if (playerturn==2){
+                grid[player2y][player2x]=0;
+                    player2x=px;
+                    player2y=py;
+                    grid[player2y][player2x]=12;
+                    playerturn=3;
+                    gamestate='turn';
+            } else if (playerturn==3){
+                grid[player3y][player3x]=0;
+                player3x=px;
+                player3y=py;
+                grid[player3y][player3x]=13;
+                playerturn=4;
+                gamestate='turn';
+            } else if (playerturn==4){
+                grid[player4y][player4x]=0;
+                player4x=px;
+                player4y=py;
+                grid[player4y][player4x]=14;
+                playerturn=1;
+                gamestate='turn';
+            }
+        }
+    }
+    // this function checks if the player clicked on a stick on a boundary while in stick state.
+    // it returns true if the input matches the coordinates of the last-clicked stick, AND if those coordinates are on one or more edges.
+    // otherwise, it returns false
+    function boundarystick(bx,by){
+        if (oldstickx==bx){
+            if (oldsticky==by){
+                if (bx-1<0){
+                    if (playerturn==1){
+                        player1score+=1;
+                        player1pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=1;
+                        player2pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=1;
+                        player3pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=1;
+                        player4pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    }
+                } else if (bx+1>5){
+                    if (playerturn==1){
+                        player1score+=1;
+                        player1pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=1;
+                        player2pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=1;
+                        player3pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=1;
+                        player4pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    }
+                } else if (by-1<0){
+                    if (playerturn==1){
+                        player1score+=1;
+                        player1pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=1;
+                        player2pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=1;
+                        player3pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=1;
+                        player4pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    }
+                } else if (by+1>5){
+                    if (playerturn==1){
+                        player1score+=1;
+                        player1pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=1;
+                        player2pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=1;
+                        player3pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=1;
+                        player4pieces.push(1);
+                        playermovement(oldstickx,oldsticky);
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    // this function checks if the player clicked on a nest on a boundary while in nest state.
+    // it returns true if the input matches the coordinates of the last-clicked nest, AND if those coordinates are on one or more edges.
+    // otherwise, it returns false
+    function boundarynest(bx,by){
+        if (oldnestx==bx){
+            if (oldnesty==by){
+                if (bx-1<0){
+                    if (playerturn==1){
+                        player1score+=2;
+                        player1pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==2) {
+                        player2score+=2;
+                        player2pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=2;
+                        player3pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=2;
+                        player4pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    }
+                } else if (bx+1>5){
+                    if (playerturn==1){
+                        player1score+=2;
+                        player1pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=2;
+                        player2pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=2;
+                        player3pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=2;
+                        player4pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    }
+                } else if (by-1<0){
+                    if (playerturn==1){
+                        player1score+=2;
+                        player1pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==2) {
+                        player2score+=2;
+                        player2pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=2;
+                        player3pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=2;
+                        player4pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    }
+                } else if (by+1>5){
+                    if (playerturn==1){
+                        player1score+=2;
+                        player1pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=2;
+                        player2pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=2;
+                        player3pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=2;
+                        player4pieces.push(2);
+                        playermovement(oldnestx,oldnesty);
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    // this function checks if the player clicked on an egg on a boundary while in stick state.
+    // it returns true if the input matches the coordinates of the last-clicked egg, AND if those coordinates are on one or more edges.
+    // otherwise, it returns false
+    function boundaryegg(bx,by){
+        if (oldeggx==bx){
+            if (oldeggy==by){
+                if (bx-1<0){
+                    if (playerturn==1){
+                        player1score+=3;
+                        player1pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=3;
+                        player2pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=3;
+                        player3pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=3;
+                        player4pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    }
+                } else if (bx+1>5){
+                    if (playerturn==1){
+                        player1score+=3;
+                        player1pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==2) {
+                        player2score+=3;
+                        player2pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=3;
+                        player3pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=3;
+                        player4pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    }
+                } else if (by-1<0){
+                    if (playerturn==1){
+                        player1score+=3;
+                        player1pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=3;
+                        player2pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=3;
+                        player3pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=3;
+                        player4pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    }
+                } else if (by+1>5){
+                    if (playerturn==1){
+                        player1score+=3;
+                        player1pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==2){
+                        player2score+=3;
+                        player2pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==3){
+                        player3score+=3;
+                        player3pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    } else if (playerturn==4){
+                        player4score+=3;
+                        player4pieces.push(3);
+                        playermovement(oldeggx,oldeggy);
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    function endgamecheck(cx,cy,cz){
+        if (cx==0){
+            if (cy==0){
+                if (cz==0){
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    function gridgen(){
+        gridmaker.forEach(function(converter,x){
+            if (gridmaker[x]<50){
+                gridmaker[x]=1;
+            } else if (gridmaker[x]<65){
+                gridmaker[x]=2;
+            } else if (gridmaker[x]<77){
+                gridmaker[x]=3;
+            } else {
+                gridmaker[x]=0;
+            }
+        })
+        grid[0][1]=gridmaker[0];
+        grid[0][2]=gridmaker[1];
+        grid[1][0]=gridmaker[2];
+        grid[1][1]=gridmaker[3];
+        grid[1][2]=gridmaker[4];
+        grid[2][0]=gridmaker[5];
+        grid[2][1]=gridmaker[6];
+        grid[2][2]=gridmaker[7];
+        grid[0][4]=grid[0][1];
+        grid[5][1]=grid[0][1];
+        grid[5][4]=grid[0][1];
+        grid[0][3]=grid[0][2];
+        grid[5][2]=grid[0][2];
+        grid[5][3]=grid[0][2];
+        grid[1][5]=grid[1][0];
+        grid[4][0]=grid[1][0];
+        grid[4][5]=grid[1][0];
+        grid[1][4]=grid[1][1];
+        grid[4][1]=grid[1][1];
+        grid[4][4]=grid[1][1];
+        grid[1][3]=grid[1][2];
+        grid[4][2]=grid[1][2];
+        grid[4][3]=grid[1][2];
+        grid[2][5]=grid[2][0];
+        grid[3][0]=grid[2][0];
+        grid[3][5]=grid[2][0];
+        grid[2][4]=grid[2][1];
+        grid[3][1]=grid[2][1];
+        grid[3][4]=grid[2][1];
+        grid[2][3]=grid[2][2];
+        grid[3][2]=grid[2][2];
+        grid[3][3]=grid[2][2];
+    } // 49% sticks, 15% nests, 12% eggs, 24% empty spaces 
+
+    </script>
+</head>
+<body>
+</body>
+</html>
