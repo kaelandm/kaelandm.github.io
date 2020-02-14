@@ -6,18 +6,18 @@
     <script>
         var kiss=0;
         function preload(){
-            valentine=loadImage('mechasweeto-valentine.gif');
-            clickforkiss=loadImage('mechasweeto-click-for-kiss.gif');
+            valentine=createImg('mechasweeto-valentine.gif');
+            clickforkiss=createImg('mechasweeto-click-for-kiss.gif');
         }
         function setup(){
-            createCanvas(510,900);
+            createCanvas(408,720);
 
         }
         function draw(){
             if (kiss==0){
-                image(clickforkiss,0,0);
+                clickforkiss.position(0,0);
             } else {
-                image(valentine,0,0);
+                valentine.position(0,0);
             }
         }
         function mouseClicked(){
