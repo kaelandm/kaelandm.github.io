@@ -1,13 +1,13 @@
 <!doctype html>
 <head>
     <meta charset="utf-8">
-    <title>Happy Valentine's Day to my MECHASWEETO</title>
+    <title>PIGEONHEART</title>
     <script src="p5.js"></script>
     <script>
         var kiss=0;
         function preload(){
-            valentine=createImg('mechasweeto-valentine.gif');
-            clickforkiss=createImg('mechasweeto-click-for-kiss.gif');
+            valentine=loadImage('mechasweeto-valentine.gif');
+            clickforkiss=loadImage('mechasweeto-click-for-kiss.gif');
         }
         function setup(){
             createCanvas(408,720);
@@ -15,9 +15,9 @@
         }
         function draw(){
             if (kiss==0){
-                clickforkiss.position(0,0);
+                image(clickforkiss,0,0);
             } else {
-                valentine.position(0,0);
+                image(valentine,0,0);
             }
         }
         function mouseClicked(){
