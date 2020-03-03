@@ -21,9 +21,9 @@ function preload(){
     fronthouse=loadImage('island/fronthouse.png');
     foreground=loadImage('island/foreground.png');
     windmills=loadAnimation('island/windmills/1.png','island/windmills/4.png');
-    backtree=loadAnimation('island/back tree/1.png','island/back tree/6.png');
-    midtree=loadAnimation('island/mid tree/1.png','island/mid tree/8.png');
-    fronttree=loadAnimation('island/front tree/1.png','island/front tree/8.png');
+    backtree=loadAnimation('island/back-tree/1.png','island/back-tree/6.png');
+    midtree=loadAnimation('island/mid-tree/1.png','island/mid-tree/8.png');
+    fronttree=loadAnimation('island/front-tree/1.png','island/front-tree/8.png');
 } 
 function setup(){
 createCanvas(800,700);
@@ -32,7 +32,7 @@ frameRate(30);
 function draw(){
     // draw images and clones
     image(sky,0,0);
-    
+
     image(clouds5,clouds5x,0);
     image(clouds5,(clouds5x-1200),0);
     image(clouds4,clouds4x,0);
