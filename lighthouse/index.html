@@ -9,6 +9,7 @@
     var clouds3x=0;
     var clouds4x=0;
     var clouds5x=0;
+    var keeper=0;
 function preload(){
     clouds1=loadImage('clouds1.png');
     clouds2=loadImage('clouds2.png');
@@ -16,6 +17,8 @@ function preload(){
     clouds4=loadImage('clouds4.png');
     clouds5=loadImage('clouds5.png');
     lighthouse=loadImage('lighthouse.png');
+    keeperstanding=loadImage('keeper-standing.png');
+    keeperwalking=loadAnimation('keeper/1.png','keeper/8.png');
 } 
 function setup(){
 createCanvas(800,800);
@@ -37,6 +40,13 @@ function draw(){
     image(clouds1,(clouds1x-1200),100);
 
     image(lighthouse,0,0);
+
+    if (keeper==0){
+        image(keeperstanding,mouseX,mouseY);
+    } else {
+        animation(keeperwalking,mouseX,mouseY);
+    }
+    
 
     // move images
     clouds5x= clouds5x+0.5;
@@ -61,6 +71,13 @@ function draw(){
         clouds1x=0;
     }
 
+}
+function mousePressed(){
+    if (keeper==0){
+        keeper=1;
+    } else {
+        keeper=0;
+    }
 }
 </script>
 </head>
