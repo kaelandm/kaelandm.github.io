@@ -42,7 +42,7 @@ function draw(){
     image(lighthouse,0,0);
 
     if (keeper==0){
-        image(keeperstanding,mouseX,mouseY);
+        image(keeperstanding,(mouseX-7.5),(mouseY-24));
     } else {
         animation(keeperwalking,mouseX,mouseY);
     }
