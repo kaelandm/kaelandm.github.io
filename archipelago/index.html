@@ -1,1 +1,87 @@
+<!doctype html>
+<head>
+<title></title>
+<script src="p5.js"></script>
+<script src="p5.play.js"></script>
+<script>
+    var clouds1x=0;
+    var clouds2x=0;
+    var clouds3x=0;
+    var clouds4x=0;
+    var clouds5x=0;
+    var keeper=0;
+function preload(){
+    clouds1=loadImage('clouds1.png');
+    clouds2=loadImage('clouds2.png');
+    clouds3=loadImage('clouds3.png');
+    clouds4=loadImage('clouds4.png');
+    clouds5=loadImage('clouds5.png');
+    lighthouse=loadImage('lighthouse.png');
+    keeperstanding=loadImage('keeper-standing.png');
+    keeperwalking=loadAnimation('keeper/1.png','keeper/8.png');
+} 
+function setup(){
+createCanvas(800,800);
+frameRate(30);
+}
+function draw(){
+    // draw images and clones
+    background(0);
 
+    image(clouds5,clouds5x,100);
+    image(clouds5,(clouds5x-1200),100);
+    image(clouds4,clouds4x,100);
+    image(clouds4,(clouds4x-1200),100);
+    image(clouds3,clouds3x,100);
+    image(clouds3,(clouds3x-1200),100);
+    image(clouds2,clouds2x,100);
+    image(clouds2,(clouds2x-1200),100);
+    image(clouds1,clouds1x,100);
+    image(clouds1,(clouds1x-1200),100);
+
+    image(lighthouse,0,0);
+
+    if (keeper==0){
+        image(keeperstanding,(422-7.5),(589-24));
+    } else {
+        animation(keeperwalking,422,589);
+    }
+    
+
+    // move images
+    clouds5x= clouds5x+0.5;
+    clouds4x=clouds4x+1;
+    clouds3x=clouds3x+2; 
+    clouds2x=clouds2x+3;
+    clouds1x=clouds1x+5;
+
+    if (clouds5x>=1200){
+        clouds5x=0;
+    }
+    if (clouds4x>=1200){
+        clouds4x=0;
+    } 
+    if (clouds3x>=1200){
+        clouds3x=0;
+    } 
+    if (clouds2x>=1200){
+        clouds2x=0;
+    } 
+    if (clouds1x>=1200){
+        clouds1x=0;
+    }
+
+}
+function mousePressed(){
+    if (keeper==0){
+        keeper=1;
+    } else {
+        keeper=0;
+    }
+}
+</script>
+</head>
+<body>
+
+</body>
+</html>
