@@ -1,6 +1,6 @@
 <!doctype html>
 <head>
-<title></title>
+<title>My sweeto</title>
 <script src="p5.js"></script>
 <script src="p5.play.js"></script>
 <script>
@@ -9,16 +9,78 @@
     var clouds3x=0;
     var clouds4x=0;
     var clouds5x=0;
-    var keeper=0;
+
+    var clickedX=0;
+    var clickedY=0;
+    var distancetodestination;
+    var speed = 100;
+    var interact = 0;
+
+class Character {
+    constructor(x,y){
+        this.walking = false;
+        this.x = x;
+        this.y = y;
+        this.animx = 0;
+        this.animy = 0;
+        this.destinationx = 0;
+        this.destinationy = 0;
+        this.distancex = 0;
+        this.distancey = 0;
+        this.state = "standing";
+    }
+}
+
+var keeper = new Character(549,580);
+
+class Interactable {
+        constructor(name,x,y,width,height,pic){
+            this.name = name;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height; 
+        }
+        setImage(pic){
+            this.pic = pic;
+        }
+        clickcheck(clickedX,clickedY){
+            if (
+                clickedX >= this.x && 
+                clickedX <= this.x + this.width &&
+                clickedY >= this.y &&
+                clickedY <= this.y + this.height
+            ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+        var bed = new Interactable("bed", 560, 539, 85, 50);
+        var icebox = new Interactable("icebox", 681, 589, 28, 47);
+        var tube = new Interactable("tube",388,558,24,52);
+        var allobjects = [bed, icebox,tube];
+
 function preload(){
     clouds1=loadImage('clouds1.png');
     clouds2=loadImage('clouds2.png');
     clouds3=loadImage('clouds3.png');
     clouds4=loadImage('clouds4.png');
     clouds5=loadImage('clouds5.png');
+
     lighthouse=loadImage('lighthouse.png');
+
+    icebox.setImage(loadImage('objects/icebox.png'));
+    bed.setImage(loadImage('objects/bed.png'));
+    tube.setImage(loadImage('objects/tube.png'));
+
     keeperstanding=loadImage('keeper-standing.png');
-    keeperwalking=loadAnimation('keeper/1.png','keeper/8.png');
+    keeperwalk=loadAnimation('keeper-walking/1.png','keeper-walking/8.png');
+    keepericebox=loadAnimation('keeper-icebox/1.png','keeper-icebox/12.png');
+    keeperbed=loadAnimation('keeper-bed/1.png','keeper-bed/22.png');
+    keepertube=loadAnimation('keeper-tube/1.png','keeper-tube/11.png');
 } 
 function setup(){
 createCanvas(800,800);
@@ -26,6 +88,10 @@ frameRate(30);
 }
 function draw(){
     // draw images and clones
+
+    keeper.animx=keeper.x+15;
+    keeper.animy=keeper.y+24;
+    
     background(0);
 
     image(clouds5,clouds5x,100);
@@ -40,13 +106,28 @@ function draw(){
     image(clouds1,(clouds1x-1200),100);
 
     image(lighthouse,0,0);
-
-    if (keeper==0){
-        image(keeperstanding,(422-7.5),(589-24));
-    } else {
-        animation(keeperwalking,422,589);
-    }
     
+    image(bed.pic,bed.x,bed.y);
+    image(icebox.pic,icebox.x,icebox.y);
+    image(tube.pic,tube.x,tube.y);
+
+    if (keeper.walking){
+        animation(keeperwalk,keeper.animx,keeper.animy);
+        if (distancecheck((keeper.x),(keeper.y),(keeper.destinationx),(keeper.destinationy))){
+            interact = 1;
+            keeper.walking = false;
+        } else {
+            movement(keeper);
+        }
+        
+    } else {
+        if (keeper.state=="standing"){
+            image(keeperstanding,keeper.x,keeper.y);
+        }
+    }
+    if (interact==1){
+        interaction();
+    }
 
     // move images
     clouds5x= clouds5x+0.5;
@@ -73,12 +154,78 @@ function draw(){
 
 }
 function mousePressed(){
-    if (keeper==0){
-        keeper=1;
+
+    clickedX=mouseX;
+    clickedY=mouseY;
+
+if (keeper.walking==false){
+    allobjects.forEach(function(interactableobject){
+        if (interactableobject.clickcheck(clickedX,clickedY)){
+            keeper.state = interactableobject.name;
+            keeper.destinationx = interactableobject.x;
+            keeper.destinationy = interactableobject.y;
+            keeper.distancex = keeper.destinationx-keeper.x;
+            keeper.distancey = keeper.destinationy-keeper.y;
+            console.log(keeper.state);
+            keeper.walking = true;
+        }
+    })
+}
+
+
+}
+
+function movement(keeper){
+    keeper.x+=keeper.distancex/speed;
+    keeper.y+=keeper.distancey/speed;
+}
+
+function distancecheck(x,y,a,b){
+    if (a-20<x && x<a+20){
+        if (b-20<y && y<b+20){
+            return true;
+        } else {
+            return false;
+        }
     } else {
-        keeper=0;
+        return false;
     }
 }
+
+function interaction(){
+    if (keeper.state=="bed"){
+        keeper.x=584;
+        keeper.y=543;
+        animation(keeperbed,keeper.animx,keeper.animy);
+        if (keeperbed.getFrame()==keeperbed.getLastFrame()){
+            keeperbed.changeFrame(0);
+            keeper.state="standing";
+            console.log(keeper.state);
+            interact=0;
+        }
+    } else if (keeper.state=="icebox"){
+        keeper.x = 666;
+        keeper.y = 585;
+        animation(keepericebox,keeper.animx,keeper.animy);
+        if (keepericebox.getFrame()==keepericebox.getLastFrame()){
+            keepericebox.changeFrame(0);
+            keeper.state="standing";
+            console.log(keeper.state);
+            interact=0;
+        }
+    } else if (keeper.state=="tube"){
+        keeper.x = 405;
+        keeper.y = 571;
+        animation(keepertube,keeper.animx,keeper.animy);
+        if (keepertube.getFrame()==keepertube.getLastFrame()){
+            keepertube.changeFrame(0);
+            keeper.state="standing";
+            console.log(keeper.state);
+            interact=0;
+        }
+    }
+}
+
 </script>
 </head>
 <body>
