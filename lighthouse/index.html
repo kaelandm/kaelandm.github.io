@@ -1,6 +1,6 @@
 <!doctype html>
 <head>
-<title>My sweeto</title>
+<title>The Lighthouse</title>
 <script src="p5.js"></script>
 <script src="p5.play.js"></script>
 <script>
@@ -12,29 +12,30 @@
 
     var clickedX=0;
     var clickedY=0;
-    var distancetodestination;
     var speed = 100;
     var interact = 0;
 
 class Character {
-    constructor(x,y){
+    constructor(x,y,room,state){
         this.walking = false;
         this.x = x;
         this.y = y;
+        this.room = room;
         this.animx = 0;
         this.animy = 0;
         this.destinationx = 0;
         this.destinationy = 0;
         this.distancex = 0;
         this.distancey = 0;
-        this.state = "standing";
+        this.state = state;
     }
 }
 
-var keeper = new Character(549,580);
+var keeper = new Character(549,580,"house","standing");
 
 class Interactable {
-        constructor(name,x,y,width,height,pic){
+        constructor(room,name,x,y,width,height,pic){
+            this.room = room;
             this.name = name;
             this.x = x;
             this.y = y;
@@ -58,9 +59,9 @@ class Interactable {
         }
     }
 
-        var bed = new Interactable("bed", 560, 539, 85, 50);
-        var icebox = new Interactable("icebox", 681, 589, 28, 47);
-        var tube = new Interactable("tube",388,558,24,52);
+        var bed = new Interactable("house","bed", 560, 539, 85, 50);
+        var icebox = new Interactable("house","icebox", 681, 589, 28, 47);
+        var tube = new Interactable("stairs","tube",388,558,24,52);
         var allobjects = [bed, icebox,tube];
 
 function preload(){
@@ -77,7 +78,8 @@ function preload(){
     tube.setImage(loadImage('objects/tube.png'));
 
     keeperstanding=loadImage('keeper-standing.png');
-    keeperwalk=loadAnimation('keeper-walking/1.png','keeper-walking/8.png');
+    keeperwalkleft=loadAnimation('keeper-walking/left/1.png','keeper-walking/left/8.png');
+    keeperwalkright=loadAnimation('keeper-walking/right/1.png','keeper-walking/right/8.png');
     keepericebox=loadAnimation('keeper-icebox/1.png','keeper-icebox/12.png');
     keeperbed=loadAnimation('keeper-bed/1.png','keeper-bed/22.png');
     keepertube=loadAnimation('keeper-tube/1.png','keeper-tube/11.png');
@@ -112,7 +114,11 @@ function draw(){
     image(tube.pic,tube.x,tube.y);
 
     if (keeper.walking){
-        animation(keeperwalk,keeper.animx,keeper.animy);
+        if (keeper.distancex>0){
+            animation(keeperwalkleft,keeper.animx,keeper.animy);
+        } else {
+            animation(keeperwalkright,keeper.animx,keeper.animy);
+        }
         if (distancecheck((keeper.x),(keeper.y),(keeper.destinationx),(keeper.destinationy))){
             interact = 1;
             keeper.walking = false;
@@ -129,7 +135,7 @@ function draw(){
         interaction();
     }
 
-    // move images
+    // move clouds
     clouds5x= clouds5x+0.5;
     clouds4x=clouds4x+1;
     clouds3x=clouds3x+2; 
@@ -153,20 +159,27 @@ function draw(){
     }
 
 }
+
+// when the mouse is clicked, check whether an object was clicked and instruct the keeper to go to it 
 function mousePressed(){
 
     clickedX=mouseX;
     clickedY=mouseY;
 
+// if the keeper is walking, nothing can be clicked 
 if (keeper.walking==false){
-    allobjects.forEach(function(interactableobject){
-        if (interactableobject.clickcheck(clickedX,clickedY)){
-            keeper.state = interactableobject.name;
-            keeper.destinationx = interactableobject.x;
-            keeper.destinationy = interactableobject.y;
+    allobjects.forEach(function(clickedobject){
+        // check if an object is clicked 
+        if (clickedobject.clickcheck(clickedX,clickedY)){
+            // the keeper's state changes to the clicked object 
+            keeper.state = clickedobject.name;
+            // set the keeper's destination to the object coords
+            keeper.destinationx = clickedobject.x;
+            keeper.destinationy = clickedobject.y;
+            // calculate the distance between the keeper and the object
             keeper.distancex = keeper.destinationx-keeper.x;
             keeper.distancey = keeper.destinationy-keeper.y;
-            console.log(keeper.state);
+            // keeper starts walking
             keeper.walking = true;
         }
     })
