@@ -15,25 +15,44 @@
     var speed = 100;
     var interact = 0;
 
-class Character {
-    constructor(x,y,room,state){
-        this.walking = false;
-        this.x = x;
-        this.y = y;
-        this.room = room;
-        this.animx = 0;
-        this.animy = 0;
-        this.destinationx = 0;
-        this.destinationy = 0;
-        this.distancex = 0;
-        this.distancey = 0;
-        this.state = state;
+    class Room {
+        constructor(x,y){
+            this.x = x;
+            this.y = y;
+        }
     }
-}
 
-var keeper = new Character(549,580,"house","standing");
+    var house = new Room(562,585);
+    var stairs = new Room(491,575);
+    var upstairs1 = new Room(398,586);
+    var upstairs2 = new Room(337,550);
+    var upstairs3 = new Room(258,498);
+    var upstairs4 = new Room(318,451);
+    var upstairs5 = new Room(374,425);
+    var upstairs6 = new Room(421,394);
+    var upstairs7 = new Room(508,374);
+    var lighthouse = new Room(497,372); 
 
-class Interactable {
+    class Character {
+        constructor(x,y,room,state){
+            this.x = x;
+            this.y = y;
+            this.room = room;
+            this.animx = 0;
+            this.animy = 0;
+            this.destinationx = [];
+            this.destinationy = [];
+            this.distancex = 0;
+            this.distancey = 0;
+
+            this.objectstate = "standing";
+            this.actionstate = "idle";
+        }
+    }
+
+    var keeper = new Character(549,580,house,"standing");
+
+    class Interactable {
         constructor(room,name,x,y,width,height,pic){
             this.room = room;
             this.name = name;
@@ -59,10 +78,12 @@ class Interactable {
         }
     }
 
-        var bed = new Interactable("house","bed", 560, 539, 85, 50);
-        var icebox = new Interactable("house","icebox", 681, 589, 28, 47);
-        var tube = new Interactable("stairs","tube",388,558,24,52);
-        var allobjects = [bed, icebox,tube];
+    var bed = new Interactable(house,"bed", 560, 539, 85, 50);
+    var icebox = new Interactable(house,"icebox", 681, 589, 28, 47);
+    var tube = new Interactable(stairs,"tube",388,558,24,52);
+    var balcony1 = new Interactable(lighthouse,"balcony1",244,362,156,67);
+    var balcony2 = new Interactable(lighthouse,"balcony2",400,362,156,67);
+    var allobjects = [bed, icebox, tube, balcony1,balcony2];
 
 function preload(){
     clouds1=loadImage('clouds1.png');
@@ -71,11 +92,15 @@ function preload(){
     clouds4=loadImage('clouds4.png');
     clouds5=loadImage('clouds5.png');
 
-    lighthouse=loadImage('lighthouse.png');
+    lighthousebg=loadImage('lighthouse/bg.png');
+    light=loadAnimation('lighthouse/light/1.png','lighthouse/light/4.png');
+    arch=loadImage('lighthouse-arch.png');
 
     icebox.setImage(loadImage('objects/icebox.png'));
     bed.setImage(loadImage('objects/bed.png'));
     tube.setImage(loadImage('objects/tube.png'));
+    balcony1.setImage(loadImage('objects/balcony1.png'));
+    balcony2.setImage(loadImage('objects/balcony2.png'));
 
     keeperstanding=loadImage('keeper-standing.png');
     keeperwalkleft=loadAnimation('keeper-walking/left/1.png','keeper-walking/left/8.png');
@@ -85,8 +110,8 @@ function preload(){
     keepertube=loadAnimation('keeper-tube/1.png','keeper-tube/11.png');
 } 
 function setup(){
-createCanvas(800,800);
-frameRate(30);
+    createCanvas(800,800);
+    frameRate(30);
 }
 function draw(){
     // draw images and clones
@@ -107,33 +132,44 @@ function draw(){
     image(clouds1,clouds1x,100);
     image(clouds1,(clouds1x-1200),100);
 
-    image(lighthouse,0,0);
+    image(lighthousebg,0,0);
+    animation(light,400,400);
     
     image(bed.pic,bed.x,bed.y);
     image(icebox.pic,icebox.x,icebox.y);
     image(tube.pic,tube.x,tube.y);
 
-    if (keeper.walking){
+    // the action state controls whether the keeper is idle, walking or interacting with an object
+    // the player can only click on objects while the keeper is idle 
+    if (keeper.actionstate == "walking"){
         if (keeper.distancex>0){
             animation(keeperwalkleft,keeper.animx,keeper.animy);
         } else {
             animation(keeperwalkright,keeper.animx,keeper.animy);
         }
-        if (distancecheck((keeper.x),(keeper.y),(keeper.destinationx),(keeper.destinationy))){
-            interact = 1;
-            keeper.walking = false;
+        if (distancecheck((keeper.x),(keeper.y),(keeper.destinationx[0]),(keeper.destinationy[0]))){
+            keeper.destinationx.shift();
+            keeper.destinationy.shift();
+            keeper.distancex = keeper.destinationx[0] - keeper.x;
+            keeper.distancey = keeper.destinationy[0] - keeper.y;
+            console.log(keeper.destinationx);
+            if (keeper.destinationx.length == 0){
+                keeper.actionstate = "interacting";
+            };
         } else {
             movement(keeper);
         }
-        
-    } else {
-        if (keeper.state=="standing"){
-            image(keeperstanding,keeper.x,keeper.y);
-        }
-    }
-    if (interact==1){
+
+    } else if (keeper.actionstate=="idle"){
+        image(keeperstanding,keeper.x,keeper.y);
+
+    } else if (keeper.actionstate == "interacting"){
         interaction();
     }
+
+    image(balcony1.pic,balcony1.x,balcony1.y);
+    image(balcony2.pic,balcony2.x,balcony2.y);
+    image(arch,0,0);
 
     // move clouds
     clouds5x= clouds5x+0.5;
@@ -166,21 +202,144 @@ function mousePressed(){
     clickedX=mouseX;
     clickedY=mouseY;
 
-// if the keeper is walking, nothing can be clicked 
-if (keeper.walking==false){
+// things can only be clicked if the keeper is idle 
+if (keeper.actionstate=="idle"){
     allobjects.forEach(function(clickedobject){
-        // check if an object is clicked 
+        // check if an object is clicked (as opposed to empty space)
         if (clickedobject.clickcheck(clickedX,clickedY)){
-            // the keeper's state changes to the clicked object 
-            keeper.state = clickedobject.name;
-            // set the keeper's destination to the object coords
-            keeper.destinationx = clickedobject.x;
-            keeper.destinationy = clickedobject.y;
-            // calculate the distance between the keeper and the object
-            keeper.distancex = keeper.destinationx-keeper.x;
-            keeper.distancey = keeper.destinationy-keeper.y;
-            // keeper starts walking
-            keeper.walking = true;
+            // the player can't click the same object twice in a row 
+            if (keeper.objectstate==clickedobject.name){
+
+            } else {
+                // the keeper's state changes to the clicked object 
+                keeper.objectstate = clickedobject.name;
+                // set the keeper's destination to the object coords
+                if (keeper.room==clickedobject.room){
+                    keeper.destinationx.push(clickedobject.x);
+                    keeper.destinationy.push(clickedobject.y);
+                } else {
+                    if (keeper.room==house){
+                        console.log("keeper in house");
+                        console.log(clickedobject);
+                        console.log(lighthouse)
+                        console.log(clickedobject.room == lighthouse)
+                        if (clickedobject.room==lighthouse){
+                            console.log("object in lighthouse");
+                            keeper.destinationx.push(house.x);
+                            keeper.destinationx.push(stairs.x);
+                            keeper.destinationx.push(upstairs1.x);
+                            keeper.destinationx.push(upstairs2.x);
+                            keeper.destinationx.push(upstairs3.x);
+                            keeper.destinationx.push(upstairs4.x);
+                            keeper.destinationx.push(upstairs5.x);
+                            keeper.destinationx.push(upstairs6.x);
+                            keeper.destinationx.push(upstairs7.x);
+                            keeper.destinationx.push(lighthouse.x);
+
+                            keeper.destinationy.push(house.y);
+                            keeper.destinationy.push(stairs.y);
+                            keeper.destinationy.push(upstairs1.y);
+                            keeper.destinationy.push(upstairs2.y);
+                            keeper.destinationy.push(upstairs3.y);
+                            keeper.destinationy.push(upstairs4.y);
+                            keeper.destinationy.push(upstairs5.y);
+                            keeper.destinationy.push(upstairs6.y);
+                            keeper.destinationy.push(upstairs7.y);
+                            keeper.destinationy.push(lighthouse.y);
+                        } else if (clickedobject.room==stairs){
+                            console.log("object in stairs");
+                            keeper.destinationx.push(house.x);
+                            keeper.destinationx.push(stairs.x);
+
+                            keeper.destinationy.push(house.y);
+                            keeper.destinationy.push(stairs.y);
+                        }
+                    } else if (keeper.room==stairs){
+                        console.log("keeper in stairs");
+                        if (clickedobject.room==lighthouse){
+                            keeper.destinationx.push(upstairs1.x);
+                            keeper.destinationx.push(upstairs2.x);
+                            keeper.destinationx.push(upstairs3.x);
+                            keeper.destinationx.push(upstairs4.x);
+                            keeper.destinationx.push(upstairs5.x);
+                            keeper.destinationx.push(upstairs6.x);
+                            keeper.destinationx.push(upstairs7.x);
+                            keeper.destinationx.push(lighthouse.x);
+
+                            keeper.destinationy.push(upstairs1.y);
+                            keeper.destinationy.push(upstairs2.y);
+                            keeper.destinationy.push(upstairs3.y);
+                            keeper.destinationy.push(upstairs4.y);
+                            keeper.destinationy.push(upstairs5.y);
+                            keeper.destinationy.push(upstairs6.y);
+                            keeper.destinationy.push(upstairs7.y);
+                            keeper.destinationy.push(lighthouse.y);
+                        } else if (clickedobject.room==house){
+                            keeper.destinationx.push(stairs.x);
+                            keeper.destinationx.push(house.x);
+
+                            keeper.destinationy.push(stairs.x);
+                            keeper.destinationy.push(house.y);
+                        }
+                    } else if (keeper.room==lighthouse){
+                        console.log("keeper in lighthouse");
+                        if (clickedobject.room==stairs){
+                            keeper.destinationx.push(lighthouse.x);
+                            keeper.destinationx.push(upstairs7.x);
+                            keeper.destinationx.push(upstairs6.x);
+                            keeper.destinationx.push(upstairs5.x);
+                            keeper.destinationx.push(upstairs4.x);
+                            keeper.destinationx.push(upstairs3.x);
+                            keeper.destinationx.push(upstairs2.x);
+                            keeper.destinationx.push(upstairs1.x);
+
+                            keeper.destinationy.push(lighthouse.y);
+                            keeper.destinationy.push(upstairs7.y);
+                            keeper.destinationy.push(upstairs6.y);
+                            keeper.destinationy.push(upstairs5.y);
+                            keeper.destinationy.push(upstairs4.y);
+                            keeper.destinationy.push(upstairs3.y);
+                            keeper.destinationy.push(upstairs2.y);
+                            keeper.destinationy.push(upstairs1.y);
+
+                        } else if (clickedobject.room==house){
+                            keeper.destinationx.push(lighthouse.x);
+                            keeper.destinationx.push(upstairs7.x);
+                            keeper.destinationx.push(upstairs6.x);
+                            keeper.destinationx.push(upstairs5.x);
+                            keeper.destinationx.push(upstairs4.x);
+                            keeper.destinationx.push(upstairs3.x);
+                            keeper.destinationx.push(upstairs2.x);
+                            keeper.destinationx.push(upstairs1.x);
+                            keeper.destinationx.push(stairs.x);
+                            keeper.destinationx.push(house.x);
+
+                            keeper.destinationy.push(lighthouse.y);
+                            keeper.destinationy.push(upstairs7.y);
+                            keeper.destinationy.push(upstairs6.y);
+                            keeper.destinationy.push(upstairs5.y);
+                            keeper.destinationy.push(upstairs4.y);
+                            keeper.destinationy.push(upstairs3.y);
+                            keeper.destinationy.push(upstairs2.y);
+                            keeper.destinationy.push(upstairs1.y);
+                            keeper.destinationy.push(stairs.y);
+                            keeper.destinationy.push(house.y);
+
+                        }
+
+                    }
+                    keeper.destinationx.push(clickedobject.x);
+                    keeper.destinationy.push(clickedobject.y);
+                    keeper.room=clickedobject.room;
+                }
+                
+                // calculate the distance between the keeper and the object
+                keeper.distancex = keeper.destinationx[0] - keeper.x;
+                keeper.distancey = keeper.destinationy[0] - keeper.y;
+                // keeper starts walking
+                keeper.actionstate = "walking";
+            }
+            
         }
     })
 }
@@ -194,8 +353,8 @@ function movement(keeper){
 }
 
 function distancecheck(x,y,a,b){
-    if (a-20<x && x<a+20){
-        if (b-20<y && y<b+20){
+    if (a-10<x && x<a+10){
+        if (b-10<y && y<b+10){
             return true;
         } else {
             return false;
@@ -206,36 +365,35 @@ function distancecheck(x,y,a,b){
 }
 
 function interaction(){
-    if (keeper.state=="bed"){
+    if (keeper.objectstate=="bed"){
         keeper.x=584;
         keeper.y=543;
         animation(keeperbed,keeper.animx,keeper.animy);
         if (keeperbed.getFrame()==keeperbed.getLastFrame()){
             keeperbed.changeFrame(0);
-            keeper.state="standing";
-            console.log(keeper.state);
-            interact=0;
+            keeper.actionstate="idle";
         }
-    } else if (keeper.state=="icebox"){
+    } else if (keeper.objectstate=="icebox"){
         keeper.x = 666;
         keeper.y = 585;
         animation(keepericebox,keeper.animx,keeper.animy);
         if (keepericebox.getFrame()==keepericebox.getLastFrame()){
             keepericebox.changeFrame(0);
-            keeper.state="standing";
-            console.log(keeper.state);
-            interact=0;
+            keeper.actionstate="idle";
         }
-    } else if (keeper.state=="tube"){
+    } else if (keeper.objectstate=="tube"){
         keeper.x = 405;
         keeper.y = 571;
         animation(keepertube,keeper.animx,keeper.animy);
         if (keepertube.getFrame()==keepertube.getLastFrame()){
             keepertube.changeFrame(0);
-            keeper.state="standing";
-            console.log(keeper.state);
-            interact=0;
+            keeper.actionstate="idle";
         }
+    } else if (keeper.objectstate=="balcony1"){
+        keeper.actionstate="idle";
+
+    } else if (keeper.objectstate=="balcony2"){
+        keeper.actionstate="idle";
     }
 }
 
