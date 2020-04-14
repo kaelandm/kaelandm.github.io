@@ -12,8 +12,12 @@
 
     var clickedX=0;
     var clickedY=0;
-    var speed = 100;
+    var speed = 25;
     var interact = 0;
+
+    var lettercheck = 0;
+    var todaysletter;
+    var letternumber = 0;
 
     class Room {
         constructor(x,y){
@@ -108,6 +112,35 @@ function preload(){
     keepericebox=loadAnimation('keeper-icebox/1.png','keeper-icebox/12.png');
     keeperbed=loadAnimation('keeper-bed/1.png','keeper-bed/22.png');
     keepertube=loadAnimation('keeper-tube/1.png','keeper-tube/11.png');
+
+    // letters
+    boss1=loadImage('letters/boss1.png');
+    boss2=loadImage('letters/boss2.png');
+    boss3=loadImage('letters/boss3.png');
+    chasing1=loadImage('letters/chasing1.png');
+    chasing2=loadImage('letters/chasing2.png');
+    chasing3=loadImage('letters/chasing3.png');
+    comrade1=loadImage('letters/comrade1.png');
+    comrade2=loadImage('letters/comrade2.png');
+    comrade3=loadImage('letters/comrade3.png');
+    jean1=loadImage('letters/jean1.png');
+    rescued1=loadImage('letters/rescued1.png');
+    rescued2=loadImage('letters/rescued2.png');
+    sam1=loadImage('letters/sam1.png');
+    supplies1=loadImage('letters/supplies1.png');
+    supplies2=loadImage('letters/supplies2.png');
+    supplies3=loadImage('letters/supplies3.png');
+
+    boss = [boss1, boss2, boss3];
+    chasing = [chasing1, chasing2, chasing3];
+    comrade = [comrade1, comrade2, comrade3];
+    rescued = [rescued1, rescued2];
+    supplies = [supplies1, supplies2, supplies3];
+    jean = [jean1];
+    sam = [sam1];
+
+    letters = [boss, chasing, comrade, rescued, supplies, jean, sam];
+
 } 
 function setup(){
     createCanvas(800,800);
@@ -152,7 +185,6 @@ function draw(){
             keeper.destinationy.shift();
             keeper.distancex = keeper.destinationx[0] - keeper.x;
             keeper.distancey = keeper.destinationy[0] - keeper.y;
-            console.log(keeper.destinationx);
             if (keeper.destinationx.length == 0){
                 keeper.actionstate = "interacting";
             };
@@ -165,11 +197,22 @@ function draw(){
 
     } else if (keeper.actionstate == "interacting"){
         interaction();
+
+    } else if (keeper.actionstate == "letter"){
+        image(keeperstanding,keeper.x,keeper.y);
+
     }
 
     image(balcony1.pic,balcony1.x,balcony1.y);
     image(balcony2.pic,balcony2.x,balcony2.y);
     image(arch,0,0);
+
+    if (keeper.actionstate == "letter") {
+        image(todaysletter[0], 150, 50);
+        
+    }
+
+    
 
     // move clouds
     clouds5x= clouds5x+0.5;
@@ -219,12 +262,7 @@ if (keeper.actionstate=="idle"){
                     keeper.destinationy.push(clickedobject.y);
                 } else {
                     if (keeper.room==house){
-                        console.log("keeper in house");
-                        console.log(clickedobject);
-                        console.log(lighthouse)
-                        console.log(clickedobject.room == lighthouse)
                         if (clickedobject.room==lighthouse){
-                            console.log("object in lighthouse");
                             keeper.destinationx.push(house.x);
                             keeper.destinationx.push(stairs.x);
                             keeper.destinationx.push(upstairs1.x);
@@ -247,7 +285,6 @@ if (keeper.actionstate=="idle"){
                             keeper.destinationy.push(upstairs7.y);
                             keeper.destinationy.push(lighthouse.y);
                         } else if (clickedobject.room==stairs){
-                            console.log("object in stairs");
                             keeper.destinationx.push(house.x);
                             keeper.destinationx.push(stairs.x);
 
@@ -255,7 +292,6 @@ if (keeper.actionstate=="idle"){
                             keeper.destinationy.push(stairs.y);
                         }
                     } else if (keeper.room==stairs){
-                        console.log("keeper in stairs");
                         if (clickedobject.room==lighthouse){
                             keeper.destinationx.push(upstairs1.x);
                             keeper.destinationx.push(upstairs2.x);
@@ -278,11 +314,10 @@ if (keeper.actionstate=="idle"){
                             keeper.destinationx.push(stairs.x);
                             keeper.destinationx.push(house.x);
 
-                            keeper.destinationy.push(stairs.x);
+                            keeper.destinationy.push(stairs.y);
                             keeper.destinationy.push(house.y);
                         }
                     } else if (keeper.room==lighthouse){
-                        console.log("keeper in lighthouse");
                         if (clickedobject.room==stairs){
                             keeper.destinationx.push(lighthouse.x);
                             keeper.destinationx.push(upstairs7.x);
@@ -342,6 +377,13 @@ if (keeper.actionstate=="idle"){
             
         }
     })
+} else if (keeper.actionstate=="letter"){
+    if (todaysletter.length == 1) {
+            letters.splice(letternumber, 1);
+        } else {
+            todaysletter.shift();
+        } 
+    keeper.actionstate="idle";
 }
 
 
@@ -371,6 +413,7 @@ function interaction(){
         animation(keeperbed,keeper.animx,keeper.animy);
         if (keeperbed.getFrame()==keeperbed.getLastFrame()){
             keeperbed.changeFrame(0);
+            lettercheck=0;
             keeper.actionstate="idle";
         }
     } else if (keeper.objectstate=="icebox"){
@@ -387,7 +430,13 @@ function interaction(){
         animation(keepertube,keeper.animx,keeper.animy);
         if (keepertube.getFrame()==keepertube.getLastFrame()){
             keepertube.changeFrame(0);
-            keeper.actionstate="idle";
+            if (lettercheck==1){
+                keeper.actionstate="idle";
+            } else {
+                lettergen();
+                lettercheck=1;
+                keeper.actionstate="letter";
+            }
         }
     } else if (keeper.objectstate=="balcony1"){
         keeper.actionstate="idle";
@@ -395,6 +444,16 @@ function interaction(){
     } else if (keeper.objectstate=="balcony2"){
         keeper.actionstate="idle";
     }
+}
+
+function lettergen(){
+    // generate between 0 and 2 letters at random
+    // letters should only appear once 
+    // if it's a letter from a series, it should be the first one that hasn't been seen already
+    letternumber = int(random(letters.length));
+    console.log(letternumber);
+    todaysletter = letters[letternumber];
+    console.log(todaysletter);
 }
 
 </script>
