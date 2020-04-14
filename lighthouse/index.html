@@ -19,6 +19,10 @@
     var todaysletter;
     var letternumber = 0;
 
+    var todaysfood;
+    var foodnumber=0;
+    var foodcheck=0;
+
     class Room {
         constructor(x,y){
             this.x = x;
@@ -85,27 +89,35 @@
     var bed = new Interactable(house,"bed", 560, 539, 85, 50);
     var icebox = new Interactable(house,"icebox", 681, 589, 28, 47);
     var tube = new Interactable(stairs,"tube",388,558,24,52);
-    var balcony1 = new Interactable(lighthouse,"balcony1",244,362,156,67);
-    var balcony2 = new Interactable(lighthouse,"balcony2",400,362,156,67);
-    var allobjects = [bed, icebox, tube, balcony1,balcony2];
+    var balcony1 = new Interactable(lighthouse,"balcony1",244,362,78,67);
+    var balcony2 = new Interactable(lighthouse,"balcony2",322,362,78,67);
+    var balcony3 = new Interactable(lighthouse,"balcony3",400,362,78,67);
+    var balcony4 = new Interactable(lighthouse,"balcony4",478,362,78,67);
+    var allobjects = [bed, icebox, tube, balcony1, balcony2, balcony3, balcony4];
+
+    
 
 function preload(){
+    // clouds
     clouds1=loadImage('clouds1.png');
     clouds2=loadImage('clouds2.png');
     clouds3=loadImage('clouds3.png');
     clouds4=loadImage('clouds4.png');
     clouds5=loadImage('clouds5.png');
 
+    // lighthouse images
     lighthousebg=loadImage('lighthouse/bg.png');
     light=loadAnimation('lighthouse/light/1.png','lighthouse/light/4.png');
     arch=loadImage('lighthouse-arch.png');
 
+    // interactable objects
     icebox.setImage(loadImage('objects/icebox.png'));
     bed.setImage(loadImage('objects/bed.png'));
     tube.setImage(loadImage('objects/tube.png'));
     balcony1.setImage(loadImage('objects/balcony1.png'));
-    balcony2.setImage(loadImage('objects/balcony2.png'));
+    balcony3.setImage(loadImage('objects/balcony2.png'));
 
+    // keeper images and animations
     keeperstanding=loadImage('keeper-standing.png');
     keeperwalkleft=loadAnimation('keeper-walking/left/1.png','keeper-walking/left/8.png');
     keeperwalkright=loadAnimation('keeper-walking/right/1.png','keeper-walking/right/8.png');
@@ -131,15 +143,25 @@ function preload(){
     supplies2=loadImage('letters/supplies2.png');
     supplies3=loadImage('letters/supplies3.png');
 
+    // food 
+    noodles=loadImage('food/noodles.png');
+    rice=loadImage('food/rice.png');
+    potatoes=loadImage('food/potatoes.png');
+    soup=loadImage('food/soup.png');
+    sandwich=loadImage('food/sandwich.png');
+
+    food = [noodles,rice,potatoes,soup,sandwich];
+
+    // letter arrays (for random generation)
     boss = [boss1, boss2, boss3];
-    chasing = [chasing1, chasing2, chasing3];
-    comrade = [comrade1, comrade2, comrade3];
-    rescued = [rescued1, rescued2];
-    supplies = [supplies1, supplies2, supplies3];
+    chasing = [chasing1,chasing2,chasing3];
+    comrade = [comrade1,comrade2,comrade3];
+    rescued = [rescued1,rescued2];
+    supplies = [supplies1,supplies2,supplies3];
     jean = [jean1];
     sam = [sam1];
 
-    letters = [boss, chasing, comrade, rescued, supplies, jean, sam];
+    letters = [boss,chasing,comrade,rescued,supplies,jean,sam];
 
 } 
 function setup(){
@@ -201,13 +223,15 @@ function draw(){
     } else if (keeper.actionstate == "letter"){
         image(keeperstanding,keeper.x,keeper.y);
 
-    }
+    } 
 
+    // these images appear over the keeper (so the keeper walks behind them)
     image(balcony1.pic,balcony1.x,balcony1.y);
-    image(balcony2.pic,balcony2.x,balcony2.y);
+    image(balcony3.pic,balcony3.x,balcony3.y);
     image(arch,0,0);
 
     if (keeper.actionstate == "letter") {
+        // takes the first object in the array so that the first letter in a series will always be read before the others
         image(todaysletter[0], 150, 50);
         
     }
@@ -378,14 +402,15 @@ if (keeper.actionstate=="idle"){
         }
     })
 } else if (keeper.actionstate=="letter"){
+    // if there is only one letter left in the series, that series gets removed from the array of letters
     if (todaysletter.length == 1) {
             letters.splice(letternumber, 1);
         } else {
+            // if there is more than one letter left, remove the first letter in the series 
             todaysletter.shift();
         } 
     keeper.actionstate="idle";
-}
-
+} 
 
 }
 
@@ -395,6 +420,8 @@ function movement(keeper){
 }
 
 function distancecheck(x,y,a,b){
+    // the distance is within 20 pixels so as to avoid the keeper missing the check altogether and walking 
+    // off into nowhere 
     if (a-10<x && x<a+10){
         if (b-10<y && y<b+10){
             return true;
@@ -413,13 +440,21 @@ function interaction(){
         animation(keeperbed,keeper.animx,keeper.animy);
         if (keeperbed.getFrame()==keeperbed.getLastFrame()){
             keeperbed.changeFrame(0);
+            // when the keeper goes to bed, letters can be checked again and you can get more food
             lettercheck=0;
+            foodcheck=0;
             keeper.actionstate="idle";
         }
     } else if (keeper.objectstate=="icebox"){
         keeper.x = 666;
         keeper.y = 585;
         animation(keepericebox,keeper.animx,keeper.animy);
+        // if the fridge hasn't been checked, you can get food
+        if (foodcheck==0){
+                foodgen();
+                foodcheck=1;
+            }
+        image(todaysfood,643,540);
         if (keepericebox.getFrame()==keepericebox.getLastFrame()){
             keepericebox.changeFrame(0);
             keeper.actionstate="idle";
@@ -430,8 +465,13 @@ function interaction(){
         animation(keepertube,keeper.animx,keeper.animy);
         if (keepertube.getFrame()==keepertube.getLastFrame()){
             keepertube.changeFrame(0);
+            // if the tube has been checked already today, there is nothing
             if (lettercheck==1){
                 keeper.actionstate="idle";
+            // if there are no letters left, don't generate a letter
+            } else if (letters.length == 0){
+                keeper.actionstate="idle";
+            // if the tube hasn't been checked, a letter is randomly generated
             } else {
                 lettergen();
                 lettercheck=1;
@@ -440,20 +480,24 @@ function interaction(){
         }
     } else if (keeper.objectstate=="balcony1"){
         keeper.actionstate="idle";
-
     } else if (keeper.objectstate=="balcony2"){
+        keeper.actionstate="idle"; 
+    } else if (keeper.objectstate=="balcony3"){
+        keeper.actionstate="idle";
+    } else if (keeper.objectstate=="balcony4"){
         keeper.actionstate="idle";
     }
 }
 
 function lettergen(){
-    // generate between 0 and 2 letters at random
-    // letters should only appear once 
-    // if it's a letter from a series, it should be the first one that hasn't been seen already
+    // generates one letter a day at random
     letternumber = int(random(letters.length));
-    console.log(letternumber);
     todaysletter = letters[letternumber];
-    console.log(todaysletter);
+}
+
+function foodgen(){
+    foodnumber = int(random(food.length));
+    todaysfood = food[foodnumber];
 }
 
 </script>
