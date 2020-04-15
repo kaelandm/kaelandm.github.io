@@ -3,25 +3,53 @@
 <title>The Lighthouse</title>
 <script src="p5.js"></script>
 <script src="p5.play.js"></script>
+<script src="p5.sound.js"></script>
 <script>
+    // declare variables
+
+    // this variable dictates the x coordinate of the different cloud layers, so as to create a parallax effect
     var clouds1x=0;
     var clouds2x=0;
     var clouds3x=0;
     var clouds4x=0;
     var clouds5x=0;
 
+    // these variables grab the x and y value of the mouse on click
     var clickedX=0;
     var clickedY=0;
-    var speed = 25;
-    var interact = 0;
 
+    // this modifies how quickly the keeper moves
+    var speed = 25;
+
+    // 
     var lettercheck = 0;
+    // this variable stores the letter that will be displayed when the keeper checks the mailbox
     var todaysletter;
     var letternumber = 0;
 
     var todaysfood;
     var foodnumber=0;
     var foodcheck=0;
+
+    var plantwatered=0;
+
+    var medalscheck=0;
+
+    // counter: counts up every frame
+    // number: when the counter hits this number, a random sound plays
+    // picker: picks a random sound from the array
+
+    var bgsoundscounter = 0;
+    var bgsoundsnumber = 10;
+
+    var stepsoundscounter = 0;
+    var stepsoundsnumber = 90;
+
+    var lighthousesoundscounter = 0;
+    var lighthousesoundsnumber = 90;
+
+    // "rooms" are actually checkpoints with coordinates. when the keeper moves between rooms, they
+    // move towards each of these checkpoints before arriving at the object.
 
     class Room {
         constructor(x,y){
@@ -32,17 +60,22 @@
 
     var house = new Room(562,585);
     var stairs = new Room(491,575);
-    var upstairs1 = new Room(398,586);
+    var upstairs1 = new Room(388,586);
     var upstairs2 = new Room(337,550);
     var upstairs3 = new Room(258,498);
-    var upstairs4 = new Room(318,451);
+    var upstairs4 = new Room(310,451);
     var upstairs5 = new Room(374,425);
-    var upstairs6 = new Room(421,394);
-    var upstairs7 = new Room(508,374);
+    var upstairs6 = new Room(421,384);
+    var upstairs7 = new Room(508,364);
     var lighthouse = new Room(497,372); 
 
+    // the keeper is the only character. it takes x and y coords and a room as input. 
+    // the keeper has two kinds of states - objectstate, which determines which object the
+    // keeper is interacting with, and actionstate, which determines whether the keeper 
+    // is walking, idle, interacting, or reading a letter.
+
     class Character {
-        constructor(x,y,room,state){
+        constructor(x,y,room){
             this.x = x;
             this.y = y;
             this.room = room;
@@ -58,7 +91,9 @@
         }
     }
 
-    var keeper = new Character(549,580,house,"standing");
+    var keeper = new Character(549,580,house);
+
+    // the interactable class includes all of the objects the keeper can interact with. 
 
     class Interactable {
         constructor(room,name,x,y,width,height,pic){
@@ -85,15 +120,16 @@
             }
         }
     }
-
     var bed = new Interactable(house,"bed", 560, 539, 85, 50);
     var icebox = new Interactable(house,"icebox", 681, 589, 28, 47);
+    var plant = new Interactable(house,"plant",650,571,29,42);
     var tube = new Interactable(stairs,"tube",388,558,24,52);
+    var medals = new Interactable(stairs, "medals",420,562,59,36);
     var balcony1 = new Interactable(lighthouse,"balcony1",244,362,78,67);
     var balcony2 = new Interactable(lighthouse,"balcony2",322,362,78,67);
     var balcony3 = new Interactable(lighthouse,"balcony3",400,362,78,67);
     var balcony4 = new Interactable(lighthouse,"balcony4",478,362,78,67);
-    var allobjects = [bed, icebox, tube, balcony1, balcony2, balcony3, balcony4];
+    var allobjects = [bed, icebox, tube, plant, medals, balcony1, balcony2, balcony3, balcony4];
 
     
 
@@ -114,8 +150,13 @@ function preload(){
     icebox.setImage(loadImage('objects/icebox.png'));
     bed.setImage(loadImage('objects/bed.png'));
     tube.setImage(loadImage('objects/tube.png'));
+    plant.setImage(loadImage('objects/plant.png'));
+    flowerblooming=loadImage('objects/flower-blooming.png');
+    flowerdrooping=loadImage('objects/flower-drooping.png');
     balcony1.setImage(loadImage('objects/balcony1.png'));
     balcony3.setImage(loadImage('objects/balcony2.png'));
+    medals.setImage(loadImage('objects/medals.png'));
+    medalstext=loadImage('objects/medalstext.png');
 
     // keeper images and animations
     keeperstanding=loadImage('keeper-standing.png');
@@ -124,6 +165,42 @@ function preload(){
     keepericebox=loadAnimation('keeper-icebox/1.png','keeper-icebox/12.png');
     keeperbed=loadAnimation('keeper-bed/1.png','keeper-bed/22.png');
     keepertube=loadAnimation('keeper-tube/1.png','keeper-tube/11.png');
+    keeperplant=loadAnimation('keeper-plant/1.png','keeper-plant/9.png');
+    keepermedals=loadAnimation('keeper-medals/1.png','keeper-medals/12.png');
+
+    // sounds
+
+    // background sounds play all the time
+    bg1 = loadSound('sounds/background-001.mp3');
+    bg2 = loadSound('sounds/background-002.mp3');
+    bg3 = loadSound('sounds/background-003.mp3');
+    bg4 = loadSound('sounds/background-004.mp3');
+    bg5 = loadSound('sounds/background-005.mp3');
+    bg6 = loadSound('sounds/background-006.mp3');
+    bg7 = loadSound('sounds/background-007.mp3');
+
+    bgsounds = [bg1,bg2,bg3,bg4,bg5,bg6,bg7];
+    bgsoundspicker = int(random(bgsounds.length));
+    
+    // lighthouse sounds play only when the keeper is on the roof
+    lighthouse1 = loadSound('sounds/roof-001.mp3');
+    lighthouse2 = loadSound('sounds/roof-002.mp3');
+    lighthouse3 = loadSound('sounds/roof-003.mp3');
+
+    lighthousesounds = [lighthouse1,lighthouse2,lighthouse3];
+    lighthousesoundspicker = int(random(lighthousesounds.length));
+
+    // steps sounds play only when the keeper is walking 
+    steps1 = loadSound('sounds/steps-001.mp3');
+    steps2 = loadSound('sounds/steps-002.mp3');
+    steps3 = loadSound('sounds/steps-003.mp3');
+    steps4 = loadSound('sounds/steps-004.mp3');
+    steps5 = loadSound('sounds/steps-005.mp3');
+    steps6 = loadSound('sounds/steps-006.mp3');
+    steps7 = loadSound('sounds/steps-007.mp3');
+
+    stepsounds = [steps1,steps2,steps3,steps4,steps5,steps6,steps7];
+    stepsoundspicker = int(random(stepsounds.length));
 
     // letters
     boss1=loadImage('letters/boss1.png');
@@ -193,10 +270,24 @@ function draw(){
     image(bed.pic,bed.x,bed.y);
     image(icebox.pic,icebox.x,icebox.y);
     image(tube.pic,tube.x,tube.y);
+    image(medals.pic,medals.x,medals.y);
+    image(plant.pic,plant.x,plant.y);
+    // flower blooming: 653, 558
+    if (plantwatered==0){
+        image(flowerdrooping,653,558);
+    } else {
+        image(flowerblooming,653,558);
+    }
 
     // the action state controls whether the keeper is idle, walking or interacting with an object
     // the player can only click on objects while the keeper is idle 
     if (keeper.actionstate == "walking"){
+        if (stepsoundscounter==stepsoundsnumber){
+            stepsounds[stepsoundspicker].play();
+            stepsoundscounter=0;
+            stepsoundsnumber=int(random(15,60));
+            stepsoundspicker=int(random(stepsounds.length));
+        }
         if (keeper.distancex>0){
             animation(keeperwalkleft,keeper.animx,keeper.animy);
         } else {
@@ -213,6 +304,7 @@ function draw(){
         } else {
             movement(keeper);
         }
+        stepsoundscounter+=1;
 
     } else if (keeper.actionstate=="idle"){
         image(keeperstanding,keeper.x,keeper.y);
@@ -223,7 +315,28 @@ function draw(){
     } else if (keeper.actionstate == "letter"){
         image(keeperstanding,keeper.x,keeper.y);
 
-    } 
+    } else if (keeper.actionstate == "medals"){
+        image(keeperstanding,keeper.x,keeper.y);
+        image(medalstext,387,462);
+    }
+
+    if (bgsoundscounter==bgsoundsnumber){
+            bgsounds[bgsoundspicker].play();
+            bgsoundscounter=0;
+            bgsoundsnumber=int(random(30,150));
+            bgsoundspicker=int(random(bgsounds.length));
+        }
+    bgsoundscounter+=1;
+
+    if (keeper.room == lighthouse){
+        if (lighthousesoundscounter==lighthousesoundsnumber){
+            lighthousesounds[lighthousesoundspicker].play();
+            lighthousesoundscounter=0;
+            lighthousesoundsnumber=int(random(60,180));
+            lighthousesoundspicker=int(random(lighthousesounds.length));
+        }
+        lighthousesoundscounter+=1;
+    }
 
     // these images appear over the keeper (so the keeper walks behind them)
     image(balcony1.pic,balcony1.x,balcony1.y);
@@ -410,7 +523,9 @@ if (keeper.actionstate=="idle"){
             todaysletter.shift();
         } 
     keeper.actionstate="idle";
-} 
+} else if (keeper.actionstate=="medals"){
+    keeper.actionstate="idle";
+}
 
 }
 
@@ -443,6 +558,7 @@ function interaction(){
             // when the keeper goes to bed, letters can be checked again and you can get more food
             lettercheck=0;
             foodcheck=0;
+            plantwatered=0;
             keeper.actionstate="idle";
         }
     } else if (keeper.objectstate=="icebox"){
@@ -478,6 +594,18 @@ function interaction(){
                 keeper.actionstate="letter";
             }
         }
+    } else if (keeper.objectstate=="plant"){
+        keeper.x = 634;
+        keeper.y = 558;
+        animation(keeperplant,keeper.animx,keeper.animy);
+        if (keeperplant.getFrame()==keeperplant.getLastFrame()){
+            keeperplant.changeFrame(0);
+            if (plantwatered==0){
+                plantwatered=1;
+            }
+            keeper.actionstate="idle";
+        }
+    
     } else if (keeper.objectstate=="balcony1"){
         keeper.actionstate="idle";
     } else if (keeper.objectstate=="balcony2"){
@@ -486,6 +614,19 @@ function interaction(){
         keeper.actionstate="idle";
     } else if (keeper.objectstate=="balcony4"){
         keeper.actionstate="idle";
+    } else if (keeper.objectstate=="medals"){
+        keeper.x = 429;
+        keeper.y = 564;
+        animation(keepermedals,keeper.animx,keeper.animy);
+        if (keepermedals.getFrame()==keepermedals.getLastFrame()){
+            keepermedals.changeFrame(0);
+            if (medalscheck==0){
+                medalscheck=1;
+                keeper.actionstate="medals";
+            } else {
+                keeper.actionstate="idle";
+            }
+        }
     }
 }
 
@@ -498,6 +639,10 @@ function lettergen(){
 function foodgen(){
     foodnumber = int(random(food.length));
     todaysfood = food[foodnumber];
+}
+
+function soundgen(){
+
 }
 
 </script>
