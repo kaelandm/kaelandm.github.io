@@ -19,7 +19,7 @@
     var clickedY=0;
 
     // this modifies how quickly the keeper moves
-    var speed = 25;
+    var speed = 40;
 
     // 
     var lettercheck = 0;
@@ -87,7 +87,7 @@
             this.distancey = 0;
 
             this.objectstate = "standing";
-            this.actionstate = "idle";
+            this.actionstate = "start";
         }
     }
 
@@ -124,14 +124,12 @@
     var icebox = new Interactable(house,"icebox", 681, 589, 28, 47);
     var plant = new Interactable(house,"plant",650,571,29,42);
     var tube = new Interactable(stairs,"tube",388,558,24,52);
-    var medals = new Interactable(stairs, "medals",420,562,59,36);
+    var medals = new Interactable(stairs,"medals",420,562,59,36);
     var balcony1 = new Interactable(lighthouse,"balcony1",244,362,78,67);
     var balcony2 = new Interactable(lighthouse,"balcony2",322,362,78,67);
     var balcony3 = new Interactable(lighthouse,"balcony3",400,362,78,67);
     var balcony4 = new Interactable(lighthouse,"balcony4",478,362,78,67);
     var allobjects = [bed, icebox, tube, plant, medals, balcony1, balcony2, balcony3, balcony4];
-
-    
 
 function preload(){
     // clouds
@@ -145,6 +143,12 @@ function preload(){
     lighthousebg=loadImage('lighthouse/bg.png');
     light=loadAnimation('lighthouse/light/1.png','lighthouse/light/4.png');
     arch=loadImage('lighthouse-arch.png');
+
+    question=loadImage('lighthouse/question.png');
+    credits=loadImage('lighthouse/credits.png');
+
+    logo=loadImage('lighthouse/logo.png');
+    intro=loadImage('lighthouse/intro.png');
 
     // interactable objects
     icebox.setImage(loadImage('objects/icebox.png'));
@@ -201,6 +205,16 @@ function preload(){
 
     stepsounds = [steps1,steps2,steps3,steps4,steps5,steps6,steps7];
     stepsoundspicker = int(random(stepsounds.length));
+
+    // sounds that trigger on contact
+    
+    letter1 = loadSound('sounds/contact/Letter-001.mp3');
+    letter2 = loadSound('sounds/contact/Letter-002.mp3');
+    letter3 = loadSound('sounds/contact/Letter-003.mp3');
+    lettersounds = [letter1, letter2, letter3];
+    lettersoundspicker = int(random(lettersounds.length));
+
+    sleeping = loadSound('sounds/contact/Sleep.mp3');
 
     // letters
     boss1=loadImage('letters/boss1.png');
@@ -264,6 +278,11 @@ function draw(){
     image(clouds1,clouds1x,100);
     image(clouds1,(clouds1x-1200),100);
 
+    if (keeper.actionstate=="start"){
+        image(logo,0,0);
+    } else if (keeper.actionstate=="intro"){
+        image(intro,150,300);
+    } else {
     image(lighthousebg,0,0);
     animation(light,400,400);
     
@@ -320,14 +339,6 @@ function draw(){
         image(medalstext,387,462);
     }
 
-    if (bgsoundscounter==bgsoundsnumber){
-            bgsounds[bgsoundspicker].play();
-            bgsoundscounter=0;
-            bgsoundsnumber=int(random(30,150));
-            bgsoundspicker=int(random(bgsounds.length));
-        }
-    bgsoundscounter+=1;
-
     if (keeper.room == lighthouse){
         if (lighthousesoundscounter==lighthousesoundsnumber){
             lighthousesounds[lighthousesoundspicker].play();
@@ -342,14 +353,29 @@ function draw(){
     image(balcony1.pic,balcony1.x,balcony1.y);
     image(balcony3.pic,balcony3.x,balcony3.y);
     image(arch,0,0);
+    image(question,784,784);
 
     if (keeper.actionstate == "letter") {
         // takes the first object in the array so that the first letter in a series will always be read before the others
         image(todaysletter[0], 150, 50);
         
     }
+    }
 
-    
+    if (keeper.actionstate=="credits"){
+        image(keeperstanding,keeper.x,keeper.y);
+        image(credits,150,150);
+    }
+
+    if (bgsoundscounter == bgsoundsnumber) {
+        bgsounds[bgsoundspicker].play();
+        bgsoundsnumber = int(random(30, 150));
+        bgsoundspicker = int(random(bgsounds.length));
+    }
+    bgsoundscounter+=1;
+    if (bgsoundscounter>150){
+        bgsoundscounter=0;
+    }
 
     // move clouds
     clouds5x= clouds5x+0.5;
@@ -384,6 +410,12 @@ function mousePressed(){
 
 // things can only be clicked if the keeper is idle 
 if (keeper.actionstate=="idle"){
+    if (clickedX>=780){
+        if (clickedY>=780){
+            keeper.actionstate="credits";
+        }
+    }
+    else {
     allobjects.forEach(function(clickedobject){
         // check if an object is clicked (as opposed to empty space)
         if (clickedobject.clickcheck(clickedX,clickedY)){
@@ -514,6 +546,7 @@ if (keeper.actionstate=="idle"){
             
         }
     })
+    }
 } else if (keeper.actionstate=="letter"){
     // if there is only one letter left in the series, that series gets removed from the array of letters
     if (todaysletter.length == 1) {
@@ -524,6 +557,12 @@ if (keeper.actionstate=="idle"){
         } 
     keeper.actionstate="idle";
 } else if (keeper.actionstate=="medals"){
+    keeper.actionstate="idle";
+} else if (keeper.actionstate=="intro"){
+    keeper.actionstate="idle";
+} else if (keeper.actionstate=="start"){
+    keeper.actionstate="intro";
+} else if (keeper.actionstate=="credits"){
     keeper.actionstate="idle";
 }
 
@@ -552,6 +591,9 @@ function interaction(){
     if (keeper.objectstate=="bed"){
         keeper.x=584;
         keeper.y=543;
+        if (keeperbed.getFrame()==0){
+            sleeping.play();
+        }
         animation(keeperbed,keeper.animx,keeper.animy);
         if (keeperbed.getFrame()==keeperbed.getLastFrame()){
             keeperbed.changeFrame(0);
@@ -589,6 +631,9 @@ function interaction(){
                 keeper.actionstate="idle";
             // if the tube hasn't been checked, a letter is randomly generated
             } else {
+                lettersounds[lettersoundspicker].setVolume(0.2);
+                lettersounds[lettersoundspicker].play();
+                lettersoundspicker = int(random(lettersounds.length));
                 lettergen();
                 lettercheck=1;
                 keeper.actionstate="letter";
@@ -617,6 +662,7 @@ function interaction(){
     } else if (keeper.objectstate=="medals"){
         keeper.x = 429;
         keeper.y = 564;
+        
         animation(keepermedals,keeper.animx,keeper.animy);
         if (keepermedals.getFrame()==keepermedals.getLastFrame()){
             keepermedals.changeFrame(0);
@@ -637,12 +683,9 @@ function lettergen(){
 }
 
 function foodgen(){
+    // generates one food a day at random
     foodnumber = int(random(food.length));
     todaysfood = food[foodnumber];
-}
-
-function soundgen(){
-
 }
 
 </script>
