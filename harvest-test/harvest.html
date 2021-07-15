@@ -1,0 +1,1494 @@
+<!doctype html>
+
+<head>
+    <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
+
+    <title></title>
+    <script src="p5.js"></script>
+    <script src="p5.play.js"></script>
+    <script>
+        // declaring variables
+        // the whole page is divided into units, which each take up a fraction of the page's width. this is so that the game will scale according to the width of your display.
+        var unitwidth
+        // this variable denotes the space between the left/right sides of the screen and the grid/planting area.
+        var gridmargin
+        // this variable will contain all of the information to generate the grid of plants. 
+        var grid
+        // this will power the game's state machine, which decides when players can perform certain actions. 
+        var gamestate = "neutral"
+        // these variables keep track of how many actions players have per turn, and how many days have passed since the start of the game. 
+        var turncounter = 3
+        var daycounter = 1
+
+        // these variables locate the buttons on the right side, so as to detect the right button 
+        // when the player clicks on it
+        var seedbuttonX, seed2buttonX
+        var seed1buttonY;
+        var seed2buttonY;
+        var seed3buttonY;
+        var mulchX, mulchY;
+
+        // these variables locate the pause button at the top left
+        var pauseX;
+        var pauseY;
+
+        // these variables count the number of seeds adjacent to each grid square, 
+        // for the purposes of determining which flower a given seed will grow into  
+        var seed1counter = 0;
+        var seed2counter = 0;
+        var seed3counter = 0;
+        var seed4counter = 0;
+        var seed5counter = 0;
+
+        // these variables keep track of the width and height of the browser window
+        var gameWidth
+        var gameHeight
+
+        // this variable keeps track of the top margin for the grid 
+        var gridtop
+
+        // these variables are UI/background images 
+        var soil, path, fence, stand, singlepath, mulch, calendar, pause; 
+
+        // these variables are images for the sign, which displays different images depending on what flowers the city wants
+        var sign, flower1sign, flower2sign, flower3sign, flower4sign, flower5sign;
+
+        // these variables are images for the turn counter, which shows the user how many actions they have left in a day
+        var action3, action2, action1, action0
+
+        // these variables are community member images
+        var cityman, community1, community2, community3, community4, community5;
+
+        // these variables are building images
+        var building0, building1, building2, building3, building4, building5;
+
+        // this variable keeps track of how upgraded the building is
+        var buildinglevel = 0;
+
+        // these variables hold the text for each dialogue encounter (they change depending on the active scene)
+        var dialoguetext, dialoguetext2, dialoguetext3, dialoguetext4
+
+        // when the game is paused, this variable changes the background of the game to a certain colour
+        var pausefilter;
+
+        // these variables hold the four colours used in the colour palette
+        var lightest, lightish, darkish, dark;
+
+        // this variable holds the person who is "speaking" in the active dialogue scene (it changes depending on the active scene)
+        var currentperson;
+
+        // this variable holds the weight of text box outlines
+        var outlineweight;
+
+        // this variable holds the player's score according to the city
+        var score = 0;
+
+        // these variables keep track of how many pure flowers the player has grown
+        var flower1score = 0;
+        var flower2score = 0;
+        var flower3score = 0;
+        var flower4score = 0;
+        var flower5score = 0;
+
+        // this variable counts how many flowers the player has seen
+        var diversity = 0;
+
+        var seenflower12 = false;
+        var seenflower13 = false; 
+        var seenflower14 = false;
+        var seenflower15 = false;
+        var seenflower21 = false;
+        var seenflower23 = false;
+        var seenflower24 = false;
+        var seenflower25 = false;
+        var seenflower31 = false;
+        var seenflower32 = false;
+        var seenflower34 = false;
+        var seenflower35 = false;
+        var seenflower41 = false;
+        var seenflower42 = false;
+        var seenflower43 = false;
+        var seenflower45 = false;
+        var seenflower51 = false;
+        var seenflower52 = false;
+        var seenflower53 = false;
+        var seenflower54 = false;
+
+        // these variables are arrays that hold all of the possible dialogue triggers
+        var dialoguedays, dialoguescores, dialoguediversity, dialogueother
+
+        // this variable keeps track of what type of flower is on the sign (if any) 
+        var tasksign = "none";
+        var currenttitle = "Constituent. Taxpayer?";
+
+        // these variables change when a specific dialogue scene is triggered, and in turn, tell the game how to generate 
+        // the specific information for that scene
+        var todaysdialogue;
+        var dialoguetype;
+
+        function preload() {
+            // the grid is coded as an array made up of arrays. each array-within-the-array represents a column. 
+            // i added line breaks for clarity but this representation of the grid is actually rotated 90 degrees from how it appears on the page (ie. there are four rows, each with five columns)
+            // each unit of the grid is given a state. since the soil starts with no plants in it, the state is "empty" for all units. 
+            // as the garden fills with plants, these units will change states. 
+            grid = [
+                ["empty", "empty", "empty", "empty"],
+                ["empty", "empty", "empty", "empty"],
+                ["empty", "empty", "empty", "empty"],
+                ["empty", "empty", "empty", "empty"],
+                ["empty", "empty", "empty", "empty"]
+            ];
+
+            // at the start of the game, the player has not seen any flowers. this function sets them all as false
+            dialoguedays = [3,8,15,20,30,40,100];
+            dialoguescores = [50000, 1200, 800, 700, 500];
+            dialoguediversity = [21,19,16,13,10,7,5,3,1];
+            dialogueother = [];
+
+            // preload background and UI elements
+            bitpotion = loadFont('assets/BitPotion.ttf');
+            soil = loadImage('assets/soil.png');
+            path = loadImage('assets/path.png');
+            fence = loadImage('assets/fence.png');
+            stand = loadImage('assets/stand.png');
+            singlepath = loadImage('assets/singlepath.png');
+            mulch = loadImage('assets/mulch.png');
+            calendar = loadImage('assets/calendar.png');
+            pause = loadImage('assets/pause.png');
+
+            action3 = loadImage('assets/action3.png');
+            action2 = loadImage('assets/action2.png');
+            action1 = loadImage('assets/action1.png');
+            action0 = loadImage('assets/action0.png');
+
+            // preload signs
+            sign = loadImage('assets/sign.png');
+            flower1sign = loadImage('assets/flower1sign.png');
+            flower2sign = loadImage('assets/flower2sign.png'); 
+            flower3sign = loadImage('assets/flower3sign.png');
+            flower4sign = loadImage('assets/flower4sign.png');
+            flower5sign = loadImage('assets/flower5sign.png');
+
+            // preload people
+            cityman = loadImage('assets/people/cityman.png');
+            community1 = loadImage('assets/people/community1.png');
+            community2 = loadImage('assets/people/community2.png');
+            community3 = loadImage('assets/people/community3.png');
+            community4 = loadImage('assets/people/community4.png');
+            community5 = loadImage('assets/people/community5.png');
+
+            // preload buildings
+            building0 = loadImage('assets/building/building0.png');
+            building1 = loadImage('assets/building/building1.png');
+            building2 = loadImage('assets/building/building2.png');
+            building3 = loadImage('assets/building/building3.png');
+            building4 = loadImage('assets/building/building4.png');
+            building5 = loadImage('assets/building/building5.png');
+
+            // preload UI variables
+            lightest = color(224, 248, 207);
+            lightish = color(134, 192, 108);
+            darkish = color(48, 104, 80);
+            dark = color(7, 24, 33);
+            pausefilter = lightish;
+            dialoguetext = "i am testing some very funky dialogue"
+            dialoguetext2 = "this is the first level of text hello hi";
+            dialoguetext3 = "this is the first level of text hello hi";
+            dialoguetext4 = "this is the first level of text hello hi";
+            outlineweight = 4;
+
+            // preload plants
+            seed1 = loadImage('assets/plants/seed1.png');
+            seed2 = loadImage('assets/plants/seed2.png');
+            seed3 = loadImage('assets/plants/seed3.png');
+            seed4 = loadImage('assets/plants/seed4.png');
+            seed5 = loadImage('assets/plants/seed5.png');
+
+            seed1ui = loadImage('assets/plants/seed1ui.png');
+            seed2ui = loadImage('assets/plants/seed2ui.png');
+            seed3ui = loadImage('assets/plants/seed3ui.png');
+            seed4ui = loadImage('assets/plants/seed4ui.png');
+            seed5ui = loadImage('assets/plants/seed5ui.png');
+
+            flower1 = loadImage('assets/plants/flower1.png');
+            flower2 = loadImage('assets/plants/flower2.png');
+            flower3 = loadImage('assets/plants/flower3.png');
+            flower4 = loadImage('assets/plants/flower4.png');
+            flower5 = loadImage('assets/plants/flower5.png');
+            flower12 = loadImage('assets/plants/flower12.png');
+            flower13 = loadImage('assets/plants/flower13.png');
+            flower14 = loadImage('assets/plants/flower14.png');
+            flower15 = loadImage('assets/plants/flower15.png');
+            flower21 = loadImage('assets/plants/flower21.png');
+            flower23 = loadImage('assets/plants/flower23.png');
+            flower24 = loadImage('assets/plants/flower24.png');
+            flower25 = loadImage('assets/plants/flower25.png');
+            flower31 = loadImage('assets/plants/flower31.png');
+            flower32 = loadImage('assets/plants/flower32.png');
+            flower34 = loadImage('assets/plants/flower34.png');
+            flower35 = loadImage('assets/plants/flower35.png');
+            flower41 = loadImage('assets/plants/flower41.png');
+            flower42 = loadImage('assets/plants/flower42.png');
+            flower43 = loadImage('assets/plants/flower43.png');
+            flower45 = loadImage('assets/plants/flower45.png');
+            flower51 = loadImage('assets/plants/flower51.png');
+            flower52 = loadImage('assets/plants/flower52.png');
+            flower53 = loadImage('assets/plants/flower53.png');
+            flower54 = loadImage('assets/plants/flower54.png');
+
+        }
+
+        function setup() {
+            // the canvas will be the width and height of the player's computer display.
+            gameWidth = windowWidth;
+            gameHeight = windowHeight;
+            createCanvas(windowWidth, gameHeight);
+
+        }
+
+        function draw() {
+
+            // font 
+            textFont(bitpotion);
+            textSize(unitwidth);
+            // resize the page and change the locations of images if the player changes the window size
+            gameWidth = windowWidth;
+            gameHeight = windowHeight;
+
+            // the screen is divided into a grid made up of units, each of which is 1/20 of the width of the screen (and the same height)
+            unitwidth = gameWidth / 20;
+            gridmargin = unitwidth * 7;
+            seedbuttonX = gameWidth - (unitwidth * 4);
+            seed2buttonX = gameWidth - (unitwidth * 2);
+            seed1buttonY = unitwidth;
+            seed2buttonY = unitwidth * 3;
+            seed3buttonY = unitwidth * 5;
+            pauseX = unitwidth;
+            pauseY = unitwidth;
+            gridtop = unitwidth * 3;
+            mulchX = gridmargin-(unitwidth*2);
+            mulchY = gridtop+unitwidth;
+
+            resizeCanvas(gameWidth, gameHeight);
+
+            // draw background 
+            background(7, 24, 33);
+            // draw background images
+            image(soil, gridmargin, gridtop, unitwidth * 5, unitwidth * 4);
+
+            // depending on how upgraded the player's building is, a different image of the building displays
+            if (buildinglevel == 0){
+                image(building0, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
+            } else if (buildinglevel == 1){
+                image(building1, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
+            } else if (buildinglevel == 2){
+                image(building2, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
+            } else if (buildinglevel == 3){
+                image(building3, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
+            } else if (buildinglevel == 4){
+                image(building4, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
+            } else if (buildinglevel == 5){
+                image(building5, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
+            }
+            image(calendar,gridmargin-(unitwidth*4),gridtop+unitwidth,unitwidth,unitwidth);
+            image(path, gridmargin - unitwidth, unitwidth * 2, unitwidth * 6, unitwidth);
+
+            // draw turn counter indicator depending on how many actions left in the day 
+            if (turncounter==3){
+                image(action3,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+            } else if (turncounter==2){
+                image(action2,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+            } else if (turncounter==1){
+                image(action1,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+            } else {
+                image(action0,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+            }
+
+            // draw signs depending on which flower is wanted 
+            if (tasksign == "none"){
+                image(sign, gridmargin + (unitwidth * 5), gridtop, unitwidth, unitwidth);
+            } else if (tasksign == "blue"){
+                image(flower1sign, gridmargin + (unitwidth * 5), gridtop, unitwidth, unitwidth);
+            } else if (tasksign == "red"){
+                image(flower2sign, gridmargin + (unitwidth * 5), gridtop, unitwidth, unitwidth);
+            } else if (tasksign == "purple"){
+                image(flower3sign, gridmargin + (unitwidth * 5), gridtop, unitwidth, unitwidth);
+            } else if (tasksign == "pink"){
+                image(flower4sign, gridmargin + (unitwidth * 5), gridtop, unitwidth, unitwidth);
+            } else if (tasksign == "orange"){
+                image(flower5sign, gridmargin + (unitwidth * 5), gridtop, unitwidth, unitwidth);
+            }
+            image(singlepath, gridmargin + (unitwidth * 6), gridtop, unitwidth, unitwidth);
+            image(fence, unitwidth * 4, gridtop + (unitwidth * 4), unitwidth * 3, unitwidth);
+            image(fence, unitwidth * 12, gridtop + (unitwidth * 4), unitwidth * 3, unitwidth);
+            image(stand, gridmargin + (unitwidth * 4), unitwidth * 2, unitwidth * 2, unitwidth);
+            image(singlepath, gridmargin + (unitwidth * 6), gridtop, unitwidth, unitwidth);
+            // draw the grid. updated every frame so that the grid changes in response to player actions. 
+            grid.forEach(function (rowofgrid, y) {
+                rowofgrid.forEach(function (colofgrid, x) {
+                    // empty space
+                    if (grid[y][x] == "empty") {
+                        push();
+                        if (gridlight(x, y)) {
+                            stroke(lightest);
+                            strokeWeight(outlineweight);
+                        } else {
+                            noStroke();
+                        }
+                        noFill();
+                        square((unitwidth * y) + gridmargin, unitwidth * x + gridtop, unitwidth);
+                        pop();
+                        // seeds
+                    } else if (grid[y][x] == "seed1") {
+                        gridgen(x,y,seed1);
+                    } else if (grid[y][x] == "seed2") {
+                        gridgen(x,y,seed2);
+                    } else if (grid[y][x] == "seed3") {
+                        gridgen(x,y,seed3);
+                    } else if (grid[y][x] == "seed4") {
+                        gridgen(x,y,seed4);
+                    } else if (grid[y][x] == "seed5") {
+                        gridgen(x,y,seed5);
+                        // purebred flowers
+                    } else if (grid[y][x] == "flower1") {
+                        gridgen(x,y,flower1);
+                    } else if (grid[y][x] == "flower2") {
+                        gridgen(x,y,flower2);
+                    } else if (grid[y][x] == "flower3") {
+                        gridgen(x,y,flower3);
+                    } else if (grid[y][x] == "flower4") {
+                        gridgen(x,y,flower4);
+                    } else if (grid[y][x] == "flower5") {
+                        gridgen(x,y,flower5);
+
+                        // crossbreeds that originated as seed1
+                    } else if (grid[y][x] == "flower12") {
+                        gridgen(x,y,flower12);
+                    } else if (grid[y][x] == "flower13") {
+                        gridgen(x,y,flower13);
+                    } else if (grid[y][x] == "flower14") {
+                        gridgen(x,y,flower14);
+                    } else if (grid[y][x] == "flower15") {
+                        gridgen(x,y,flower15);
+                        // crossbreeds that originated as seed2
+                    } else if (grid[y][x] == "flower21") {
+                        gridgen(x,y,flower21);
+                    } else if (grid[y][x] == "flower23") {
+                        gridgen(x,y,flower23);
+                    } else if (grid[y][x] == "flower24") {
+                        gridgen(x,y,flower24);
+                    } else if (grid[y][x] == "flower25") {
+                        gridgen(x,y,flower25);
+                        // crossbreeds that originated as seed3
+                    } else if (grid[y][x] == "flower31") {
+                        gridgen(x,y,flower31);
+                    } else if (grid[y][x] == "flower32") {
+                        gridgen(x,y,flower32);
+                    } else if (grid[y][x] == "flower34") {
+                        gridgen(x,y,flower34);
+                    } else if (grid[y][x] == "flower35") {
+                        gridgen(x,y,flower35);
+                        // crossbreeds that originated as seed4
+                    } else if (grid[y][x] == "flower41") {
+                        gridgen(x,y,flower41);
+                    } else if (grid[y][x] == "flower42") {
+                        gridgen(x,y,flower42);
+                    } else if (grid[y][x] == "flower43") {
+                        gridgen(x,y,flower43);
+                    } else if (grid[y][x] == "flower45") {
+                        gridgen(x,y,flower45);
+                        // crossbreeds that originated as seed5
+                    } else if (grid[y][x] == "flower51") {
+                        gridgen(x,y,flower51);
+                    } else if (grid[y][x] == "flower52") {
+                        gridgen(x,y,flower52);
+                    } else if (grid[y][x] == "flower53") {
+                        gridgen(x,y,flower53);
+                    } else if (grid[y][x] == "flower54") {
+                        gridgen(x,y,flower54);
+                    }
+                })
+            })
+            // draw the mulch buttons
+
+            push();
+            if (gamestate == "mulch"){
+                stroke(lightish);
+                strokeWeight(outlineweight);
+            } else if (sidelight() == "mulch"){
+                stroke(lightest);
+                strokeWeight(outlineweight);
+            } else {
+                noStroke();
+            }
+            noFill();
+            image(mulch, mulchX, mulchY,unitwidth,unitwidth);
+            square(mulchX,mulchY,unitwidth);
+            pop();
+
+            // draw the buttons on the right side 
+
+            // seed1
+            push();
+            strokeWeight(outlineweight)
+            if (gamestate == "holding1") {
+                stroke(lightish);
+                strokeWeight(outlineweight);
+            } else if (sidelight() == "seed1") {
+                stroke(lightest);
+                strokeWeight(outlineweight);
+            } else {
+                stroke(171,189,255);
+            }
+            noFill();
+            image(seed1, seedbuttonX, seed1buttonY, unitwidth, unitwidth);
+            square(seedbuttonX, seed1buttonY, unitwidth);
+            pop();
+
+            // seed2
+            push();
+            strokeWeight(outlineweight);
+            if (gamestate == "holding2") {
+                stroke(lightish);
+            } else if (sidelight() == "seed2") {
+                stroke(lightest);
+            } else {
+                stroke(222,48,81);
+            }
+            noFill();
+            image(seed2, seedbuttonX, seed2buttonY, unitwidth, unitwidth);
+            square(seedbuttonX, seed2buttonY, unitwidth);
+            pop();
+
+            // seed3
+            push();
+            strokeWeight(outlineweight);
+            if (gamestate == "holding3") {
+                stroke(lightish);
+            } else if (sidelight() == "seed3") {
+                stroke(lightest);
+            } else {
+                stroke(120,49,144);
+            }
+            noFill();
+            image(seed3, seedbuttonX, seed3buttonY, unitwidth, unitwidth);
+            square(seedbuttonX, seed3buttonY, unitwidth);
+            pop();
+
+            // seed4
+            push();
+            strokeWeight(outlineweight);
+            if (gamestate == "holding4") {
+                stroke(lightish);
+            } else if (sidelight() == "seed4") {
+                stroke(lightest);
+            } else {
+                stroke(231,140,211);
+            }
+            noFill();
+            image(seed4, seed2buttonX, seed1buttonY, unitwidth, unitwidth);
+            square(seed2buttonX, seed1buttonY, unitwidth);
+            pop();
+
+            // seed5
+            push();
+            strokeWeight(outlineweight);
+            if (gamestate == "holding5") {
+                stroke(lightish);
+            } else if (sidelight() == "seed5") {
+                stroke(lightest);
+            } else {
+                stroke(231,148,60);
+            }
+            noFill();
+            image(seed5, seed2buttonX, seed2buttonY, unitwidth, unitwidth);
+            square(seed2buttonX, seed2buttonY, unitwidth);
+            pop();
+
+            // if the player is in the menu, draw the menu
+            if (gamestate == "menu") {
+                push();
+                
+                pausefilter.setAlpha(165);
+                fill(pausefilter);
+                rect(0, 0, gameWidth, gameHeight);
+                strokeWeight(outlineweight);
+                stroke(255);
+                fill(0);
+                rect(0, 0, unitwidth*8, gameHeight);
+                fill(255);
+                noStroke();
+                text("Title: ",unitwidth,unitwidth*2)
+                text(currenttitle,unitwidth,unitwidth*4)
+                text("Score: ",unitwidth,unitwidth*6)
+                text(score,unitwidth,unitwidth*8);
+                pop();
+
+                // if the player is not in the menu, draw the pause button and counters for the number of actions and the day 
+            } else {
+                push();
+                fill(255, 255, 255);
+                // text('Actions: ' + turncounter, (unitwidth * 2), (unitwidth * 5));
+                text(daycounter, (unitwidth*3.4), (unitwidth * 4.9));
+                pop();
+                push();
+                if (sidelight() == "menu") {
+                    stroke(lightest);
+                    strokeWeight(outlineweight);
+                } else {
+                    noStroke();
+                }
+                noFill();
+                image(pause,pauseX, pauseY, unitwidth,unitwidth);
+                square(pauseX,pauseY,unitwidth);
+                pop();
+            }
+
+            // if there is dialogue, display the person and the text 
+            if (gamestate == "dialogue") {
+                dialogue();
+                image(currentperson, unitwidth * 4, gameHeight - (unitwidth * 8), unitwidth * 3, unitwidth * 5);
+                push();
+                strokeWeight(outlineweight);
+                stroke(255);
+                fill(0, 0, 0);
+                rect(unitwidth * 3.5, gameHeight - (unitwidth * 3), unitwidth * 13, unitwidth * 3);
+                noStroke();
+                fill(255, 255, 255);
+                text(dialoguetext, (unitwidth * 4.3), (gameHeight - (unitwidth * 2)));
+                text(dialoguetext2, (unitwidth * 4.3), (gameHeight - (unitwidth * 1.5)));
+                text(dialoguetext3, (unitwidth * 4.3), (gameHeight - (unitwidth)));
+                text(dialoguetext4, (unitwidth * 4.3), (gameHeight - (unitwidth/2)));
+                pop();
+            }
+
+
+            // if the player has used up all their turns for one day, this game state turns the seeds into flowers,
+            // and updates the day and turn counters to reflect that a day has passed. 
+
+            if (gamestate == "endofday") {
+                console.log(dialoguediversity[0]);
+                // clone the grid to keep track of changes during the end of day phase without having those changes disrupt the seeds (ie. if a seed becomes a flower, it should still be recognized as a seed by adjacent seeds until the end of the phase)
+                const cloneGrid = JSON.parse(JSON.stringify(grid));
+
+                grid.forEach(function (rowofgrid, y) {
+                    rowofgrid.forEach(function (colofgrid, x) {
+                        // this nested for loop looks at the adjacent tiles to each grid square to figure out what kind of flower it will become
+                        for (let b = y - 1; b <= y + 1; b++) {
+                            for (let a = x - 1; a <= x + 1; a++) {
+                                // check: if the tile is the same as the current grid square, don't count it (seeds can't pollenate themselves)
+                                if (!(a == x && b == y)) {
+                                    // check: if the tile is off the grid, don't count it
+                                    if ((b >= 0) && (b <= 4) && (a >= 0) && (a <= 3)) {
+                                        // check: if the tile is diagonal to the current grid square, don't count it
+                                        if (!((a == (x - 1)) && (b == (y - 1)))) {
+                                            if (!((a == (x - 1)) && (b == (y + 1)))) {
+                                                if (!((a == (x + 1)) && (b == (y - 1)))) {
+                                                    if (!((a == (x + 1)) && (b == (y + 1)))) {
+                                                        if (grid[b][a] == "seed1") {
+                                                            seed1counter += 1;
+                                                        } else if (grid[b][a] == "seed2") {
+                                                            seed2counter += 1;
+                                                        } else if (grid[b][a] == "seed3") {
+                                                            seed3counter += 1;
+                                                        } else if (grid[b][a] == "seed4") {
+                                                            seed4counter += 1;
+                                                        } else if (grid[b][a] == "seed5") {
+                                                            seed5counter += 1;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // transform seeds into flowers 
+                        if (grid[y][x] == "seed1") {
+                            if (seed1counter > 0 && seed2counter == 0 && seed3counter == 0 && seed4counter == 0 && seed5counter == 0) {
+                                flower1score += 1;
+                                cloneGrid[y][x] = "flower1"
+                            } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed2counter) {
+                                countflower(seenflower12);
+                                cloneGrid[y][x] = "flower12"
+                            } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed3counter) {
+                                countflower(seenflower13);
+                                cloneGrid[y][x] = "flower13"
+                            } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed4counter) {
+                                countflower(seenflower14);
+                                cloneGrid[y][x] = "flower14"
+                            } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed5counter) {
+                                countflower(seenflower15);
+                                cloneGrid[y][x] = "flower15"
+                            }
+                        } else if (grid[y][x] == "seed2") {
+                            if (seed2counter > 0 && seed1counter == 0 && seed3counter == 0 && seed4counter == 0 && seed5counter == 0) {
+                                flower2score +=1;
+                                cloneGrid[y][x] = "flower2"
+                            } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed1counter) {
+                                countflower(seenflower21);
+                                cloneGrid[y][x] = "flower21"
+                            } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed3counter) {
+                                countflower(seenflower23);
+                                cloneGrid[y][x] = "flower23"
+                            } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed4counter) {
+                                countflower(seenflower24);
+                                cloneGrid[y][x] = "flower24"
+                            } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed5counter) {
+                                countflower(seenflower25);
+                                cloneGrid[y][x] = "flower25"
+                            }
+                        } else if (grid[y][x] == "seed3") {
+                            if (seed3counter > 0 && seed1counter == 0 && seed2counter == 0 && seed4counter == 0 && seed5counter == 0) {
+                                flower3score+=1;
+                                cloneGrid[y][x] = "flower3"
+                            } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed1counter) {
+                                countflower(seenflower31);
+                                cloneGrid[y][x] = "flower31"
+                            } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed2counter) {
+                                countflower(seenflower32);
+                                cloneGrid[y][x] = "flower32"
+                            } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed4counter) {
+                                countflower(seenflower34);
+                                cloneGrid[y][x] = "flower34"
+                            } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed5counter) {
+                                countflower(seenflower35);
+                                cloneGrid[y][x] = "flower35"
+                            }
+                        } else if (grid[y][x] == "seed4") {
+                            if (seed4counter > 0 && seed1counter == 0 && seed2counter == 0 && seed3counter == 0 && seed5counter == 0) {
+                                flower4score+=1;
+                                cloneGrid[y][x] = "flower4"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed1counter) {
+                                countflower(seenflower41);
+                                cloneGrid[y][x] = "flower41"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed2counter) {
+                                countflower(seenflower42);
+                                cloneGrid[y][x] = "flower42"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed3counter) {
+                                countflower(seenflower43);
+                                cloneGrid[y][x] = "flower43"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed5counter) {
+                                countflower(seenflower45);
+                                cloneGrid[y][x] = "flower45"
+                            }
+                        } else if (grid[y][x] == "seed5") {
+                            if (seed5counter > 0 && seed1counter == 0 && seed2counter == 0 && seed3counter == 0 && seed4counter == 0) {
+                                flower5score+=1;
+                                cloneGrid[y][x] = "flower5"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed1counter) {
+                                countflower(seenflower51);
+                                cloneGrid[y][x] = "flower51"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed2counter) {
+                                countflower(seenflower52);
+                                cloneGrid[y][x] = "flower52"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed3counter) {
+                                countflower(seenflower53);
+                                cloneGrid[y][x] = "flower53"
+                            } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed4counter) {
+                                countflower(seenflower54);
+                                cloneGrid[y][x] = "flower54"
+                            }
+                        }
+                        seed1counter = 0;
+                        seed2counter = 0;
+                        seed3counter = 0;
+                        seed4counter = 0;
+                        seed5counter = 0;
+                    })
+                })
+
+                grid = cloneGrid;
+                turncounter = 3;
+                daycounter += 1;
+                if (diversity>=25){
+                    buildinglevel = 5;
+                } else if (diversity>=20){
+                    buildinglevel = 4;
+                } else if (diversity>=15){
+                    buildinglevel = 3;
+                } else if (diversity>=10){
+                    buildinglevel = 2;
+                } else if (diversity>=5){
+                    buildinglevel = 1;
+                } else {
+                    buildinglevel = 0;
+                }
+                // check to see if any tasks have been completed
+                completionchecker();
+
+                // check to see if any dialogue scenes will be played in the next day 
+                if (dialoguedaychecker()){
+                    gamestate = "dialogue";
+                } else if (dialoguediversitychecker()){
+                    gamestate = "dialogue";
+                } else if (dialogueotherchecker()){
+                    gamestate = "dialogue";
+
+                    // if there are no applicable dialogue scenes, the game proceeds to the next day as normal
+                } else {
+                    gamestate = "neutral";
+                }
+                
+            }
+        }
+        // when the mouse is clicked, we check what state the game is in to decide what actions are possible.  
+        function mouseClicked() {
+            // remember the X and Y coordinates of the location where the click happened.
+            clickedX = int(mouseX);
+            clickedY = int(mouseY);
+            // this handles the start menu interactions
+            // if the game state is neutral, this means the player is not holding any seed. 
+            if (gamestate == "neutral") {
+                // check if the mouse was clicked on the buttons - if so, change the game state to reflect this. 
+                pickup();
+
+            } else if (gamestate == "mulch"){
+                mulcher();
+            }
+
+            else if (gamestate == "holding1") {
+                holder("seed1");
+            }
+
+            else if (gamestate == "holding2") {
+                holder("seed2");
+            }
+
+            else if (gamestate == "holding3") {
+                holder("seed3");
+            }
+
+            else if (gamestate == "holding4") {
+                holder("seed4");
+            }
+
+            else if (gamestate == "holding5") {
+                holder("seed5");
+            }
+
+            else if (gamestate == "menu") {
+                gamestate = "neutral";
+            }
+
+            else if (gamestate == "dialogue") {
+                gamestate = "neutral";
+            }
+            
+
+        }
+
+        // these functions help figure out which grid square the player clicked on 
+        function gridfinderX(gx) {
+            if (gx == floor(((clickedY - gridtop) / unitwidth))) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function gridfinderY(gy) {
+            if (gy == floor((clickedX - gridmargin) / unitwidth)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        // this function highlights the correct grid square when the mouse passes over it
+        function gridlight(gx, gy) {
+            if (gx == floor((mouseY - gridtop) / unitwidth)) {
+                if (gy == floor((mouseX - gridmargin) / unitwidth)) {
+                    if (gamestate == "menu") {
+                        return false;
+                    } else if (gamestate == "dialogue") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        // this function highlights the correct square on the menu on the right side, when the mouse passes over that square 
+        function sidelight() {
+            if (gamestate == "menu") {
+                return "none";
+            } else if (gamestate == "dialogue") {
+                return "none";
+            } else if (mouseX > seed2buttonX) {
+                if (mouseX < (seed2buttonX + unitwidth)) {
+                    if (mouseY > seed2buttonY) {
+                        if (mouseY < (seed2buttonY + unitwidth)) {
+                            return "seed5"
+                        }
+                    } else if (mouseY > seed1buttonY) {
+                        if (mouseY < (seed1buttonY + unitwidth)) {
+                            return "seed4"
+                        }
+                    }
+                }
+            } else if (mouseX > seedbuttonX) {
+                if (mouseX < (seedbuttonX + unitwidth)) {
+                    if (mouseY > seed3buttonY) {
+                        if (mouseY < (seed3buttonY + unitwidth)) {
+                            return "seed3"
+                        }
+                    } else if (mouseY > seed2buttonY) {
+                        if (mouseY < (seed2buttonY + unitwidth)) {
+                            return "seed2"
+                        }
+                    } else if (mouseY > seed1buttonY) {
+                        if (mouseY < (seed1buttonY + unitwidth)) {
+                            return "seed1"
+                        }
+                    }
+                }
+            } else if (mouseX > mulchX){
+                if (mouseX < mulchX + unitwidth) { 
+                    if (mouseY > mulchY){
+                        if (mouseY<mulchY + unitwidth){
+                            return "mulch";
+                        }
+                    } 
+                }
+            } else if (mouseX > pauseX) {
+                if (mouseX < pauseX + unitwidth) {
+                    if (mouseY > pauseY) {
+                        if (mouseY < pauseY + unitwidth) {
+                            return "menu"
+                        }
+                    }
+                }
+            }
+        }
+        // when players click on a spot on the grid while holding a seed,
+        // this function figures out which seed button the player clicked on,
+        // and updates the grid so that the seed is now located there. 
+        function holder(seed) {
+            grid.forEach(function (rowofgrid, y) {
+                if (gridfinderY(y) == true) {
+                    rowofgrid.forEach(function (colofgrid, x) {
+                        if (gridfinderX(x) == true) {
+                            if (grid[y][x] == "empty") {
+                                grid[y][x] = seed;
+                                turncounter -= 1;
+                                if (turncounter == 0) {
+                                    gamestate = "endofday";
+                                } else {
+                                    gamestate = "neutral";
+                                }
+                            }
+                        }
+                    })
+                }
+            })
+            pickup();
+        }
+
+        function mulcher() {
+            grid.forEach(function (rowofgrid, y) {
+                if (gridfinderY(y) == true) {
+                    rowofgrid.forEach(function (colofgrid, x) {
+                        if (gridfinderX(x) == true) {
+                            if (grid[y][x] !== "empty") {
+                                grid[y][x] = "empty";
+                                gamestate = "neutral";
+                            }
+                        }
+                    })
+                }
+            })
+            pickup();
+        }
+
+        // this function figures out which has the highest value from four given values. 
+        // it ignores ties.
+        // it is used when figuring out how the plants cross-pollenate. 
+        function findmost(one, two, three, four) {
+            if (one > two) {
+                if (one > three) {
+                    if (one > four) {
+                        return one;
+                    } else if (four > one) {
+                        return four;
+                    }
+                } else if (three > one) {
+                    if (three > four) {
+                        return three;
+                    } else if (four > three) {
+                        return four;
+                    }
+                } else if (three == one) {
+                    if (four > three) {
+                        return four;
+                    }
+                }
+            } else if (two > one) {
+                if (two > three) {
+                    if (two > four) {
+                        return two;
+                    } else if (four > two) {
+                        return four;
+                    }
+                } else if (three > two) {
+                    if (three > four) {
+                        return three;
+                    } else if (four > three) {
+                        return four;
+                    }
+                } else if (two == three) {
+                    if (four > two) {
+                        return four;
+                    }
+                }
+            } else if (two == one) {
+                if (three > two) {
+                    if (three > four) {
+                        return three;
+                    } else if (four > three) {
+                        return four;
+                    }
+                } else if (two > three) {
+                    if (four > two) {
+                        return four;
+                    }
+                } else if (two == three) {
+                    if (four > two) {
+                        return four;
+                    }
+                }
+            }
+        }
+
+        // this function handles what happens when players click on either the pause icon, a seed from the right side, or the mulch icon
+        function pickup() {
+            if (clickedX < (pauseX + unitwidth)) {
+                if (clickedX >= pauseX) {
+                    if (clickedY > pauseY) {
+                        if (clickedY < (pauseY + unitwidth)) {
+                            gamestate = "menu";
+                        }
+                    }
+                }
+            }
+            else if (clickedX > seed2buttonX) {
+                if (clickedX < (seed2buttonX + unitwidth)) {
+                    if (clickedY > seed2buttonY) {
+                        if (clickedY < (seed2buttonY + unitwidth)) {
+                            if (gamestate == "holding5") {
+                                gamestate = "neutral";
+                            } else {
+                                gamestate = "holding5"
+                            }
+                        }
+                    } else if (clickedY > seed1buttonY) {
+                        if (clickedY < (seed1buttonY + unitwidth)) {
+                            if (gamestate == "holding4") {
+                                gamestate = "neutral";
+                            }
+                            else {
+                                gamestate = "holding4";
+                            }
+                        }
+                    }
+                }
+            } else if (clickedX > seedbuttonX) {
+                if (clickedX < (seedbuttonX + unitwidth)) {
+                    if (clickedY > seed3buttonY) {
+                        if (clickedY < (seed3buttonY + unitwidth)) {
+                            if (gamestate == "holding3") {
+                                gamestate = "neutral";
+                            } else {
+                                gamestate = "holding3"
+                            }
+                        }
+                    } else if (clickedY > seed2buttonY) {
+                        if (clickedY < (seed2buttonY + unitwidth)) {
+                            if (gamestate == "holding2") {
+                                gamestate = "neutral";
+                            } else {
+                                gamestate = "holding2"
+                            }
+                        }
+                    } else if (clickedY > seed1buttonY) {
+                        if (clickedY < (seed1buttonY + unitwidth)) {
+                            if (gamestate == "holding1") {
+                                gamestate = "neutral";
+                            } else {
+                                gamestate = "holding1"
+                            }
+                        }
+                    }
+                }
+            } else if (clickedX > mulchX){
+                if (clickedX<(mulchX+unitwidth)){
+                    if (clickedY>mulchY){
+                        if (clickedY<mulchY+unitwidth){
+                            if (gamestate == "mulch"){
+                                gamestate = "neutral";
+                            } else {
+                                gamestate = "mulch";
+                            }
+                        }
+                    } 
+                }
+            }
+        }
+
+        // this function is called from the grid generator and generates highlights and images for each unit in the garden 
+        function gridgen(x, y, z) {
+            push();
+            if (gridlight(x, y)) {
+                stroke(lightest);
+                strokeWeight(outlineweight);
+            } else {
+                noStroke();
+            }
+            noFill();
+            image(z, (unitwidth * y) + gridmargin, unitwidth * x + gridtop, unitwidth, unitwidth);
+            square((unitwidth * y) + gridmargin, unitwidth * x + gridtop, unitwidth);
+            pop();
+        }
+
+        // the dialogue function sets the current dialogue text and person depending on the trigger
+        function dialogue() {
+            // if the dialogue was triggered by the day, find the dialogue from this list
+            if (dialoguetype == "day") {
+                if (todaysdialogue == 3) {
+                    dialoguetext = "The world-famous hiphop artist Snake";
+                    dialoguetext2 = "is coming to visit City Hall!";
+                    dialoguetext3 = "All flowers must be red in his honour.";
+                    dialoguetext4 = " ";
+                    currentperson = cityman;
+                    tasksign = "red";
+                } else if (todaysdialogue == 8){
+                    dialoguetext = "A recent study states Purple flowers";
+                    dialoguetext2 = "raise property value by a whole";
+                    dialoguetext3 = "one percentage point!";
+                    dialoguetext4 = " ";
+                    currentperson = cityman;
+                    tasksign = "purple";
+                } else if (todaysdialogue == 15){
+                    dialoguetext = "The Mayor read that only Blue flowers are";
+                    dialoguetext2 = "worthy to decorate the fountain of youth.";
+                    dialoguetext3 = "Something about ley lines and energy soil.";
+                    dialoguetext4 = "Anyway, get to it.";
+                    currentperson = cityman;
+                    tasksign = "blue";
+                } else if (todaysdialogue == 20){
+                    dialoguetext = "We need all Pink flowers.";
+                    dialoguetext2 = "We’ll award you 8000 points for--";
+                    dialoguetext3 = "well, hold on, adjusting for inflation...";
+                    dialoguetext4 = "and property tax... 4430 points.";
+                    currentperson = cityman;
+                    tasksign = "pink";
+                } else if (todaysdialogue == 30){
+                    dialoguetext = "It's the Mayor's birthday and we need";
+                    dialoguetext2 = "30 baskets of Pink flowers to decorate";
+                    dialoguetext3 = "around his big cake.";
+                    dialoguetext4 = " ";
+                    currentperson = cityman;
+                    tasksign = "pink";
+                } else if (todaysdialogue == 40){
+                    dialoguetext = "Oh no! A swarm of bugs ate every";
+                    dialoguetext2 = "Orange flower in the city.";
+                    dialoguetext3 = "We need replacements, now!";
+                    dialoguetext4 = " ";
+                    currentperson = cityman;
+                    tasksign = "orange";
+                } 
+
+            // if the dialogue was triggered by the score, find the dialogue from this list
+            } else if (dialoguetype == "score"){
+                if (todaysdialogue == 50000){
+                    dialoguetext = "Your garden's looking amazing! We've";
+                    dialoguetext2 = "partnered with Fancy Lads School for Rich";
+                    dialoguetext3 = "Entrepreneurs to name a scholarship after";
+                    dialoguetext4 = "you. It's even a football scholarship!";
+                    currentperson = cityman;
+                    currenttitle = "Fancy Lads Scholar!"
+                    score += 7795;
+                } else if (todaysdialogue == 500){
+                    dialoguetext = "Even with a small plot of land,";
+                    dialoguetext2 = "you can have a beautiful garden.";
+                    dialoguetext3 = " ";
+                    dialoguetext4 = " ";
+                    currentperson = community1;
+                } else if (todaysdialogue == 700){
+                    dialoguetext = "Caring for a garden takes planning.";
+                    dialoguetext2 = "Did you know there are lots of different";
+                    dialoguetext3 = "ways you can crossbreed your plants?";
+                    dialoguetext4 = " ";
+                    currentperson = community3;
+                } else if (todaysdialogue == 800){
+                    dialoguetext = "Monoculture is one thing.";
+                    dialoguetext2 = "Growing a garden full of different plants?";
+                    dialoguetext3 = "Way harder. Way more beautiful, too.";
+                    dialoguetext4 = " ";
+                    currentperson = community4;
+                } else if (todaysdialogue == 1200){
+                    dialoguetext = "I can’t stop thinking about what might";
+                    dialoguetext2 = "happen if you place a blue seed";
+                    dialoguetext3 = "next to a purple seed.";
+                    dialoguetext4 = "Nothing? Probably nothing.";
+                    currentperson = community5;
+                }
+                
+            // if the dialogue was triggered by the plant diversity, find the dialogue from this list
+            } else if (dialoguetype == "diversity"){
+                if (todaysdialogue == 1){
+                    dialoguetext = "It doesn't take much to plant a garden.";
+                    dialoguetext2 = "As it grows, so do you as a gardener!";
+                    dialoguetext3 = "Isn't that cool?";
+                    dialoguetext4 = " ";
+                    currentperson = community2;
+                } else if (todaysdialogue == 3){
+                    dialoguetext = "Make sure you plant flowers with enough";
+                    dialoguetext2 = "room to spread! They will...";
+                    dialoguetext3 = "Believe me, they will.";
+                    dialoguetext4 = " ";
+                    currentperson = community5;
+                } else if (todaysdialogue == 5){
+                    dialoguetext = "I love having the garden out here.";
+                    dialoguetext2 = "It smells so nice!";
+                    dialoguetext3 = " ";
+                    dialoguetext4 = " ";
+                    currentperson = community1;
+                } else if (todaysdialogue == 7){
+                    dialoguetext = "Fertilizing your garden has so many";
+                    dialoguetext2 = "benefits! It introduces nitrogen";
+                    dialoguetext3 = "for leaf growth, and phosphorus,";
+                    dialoguetext4 = "for growing healthy roots!";
+                    currentperson = community4;
+                } else if (todaysdialogue == 10){
+                    dialoguetext = "If you combine a purple and a" 
+                    dialoguetext2 = "red seed, not only do you get";
+                    dialoguetext3 = "a cool plant, but you get to eat";
+                    dialoguetext4 = "the leafy green tops!";
+                    currentperson = community3;
+                } else if (todaysdialogue == 13){
+                    dialoguetext = "My grandma always told me planting";
+                    dialoguetext2 = "red seeds next to orange ones";
+                    dialoguetext3 = "boosts the WiFi.";
+                    dialoguetext4 = " ";
+                    currentperson = community5;
+                } else if (todaysdialogue == 16){
+                    dialoguetext = "My mom told me to go get some sun,";
+                    dialoguetext2 = "but little does she know, I can just";
+                    dialoguetext3 = "breed an orange seed with a purple one.";
+                    dialoguetext4 = " ";
+                    currentperson = community4;
+                } else if (todaysdialogue == 19){
+                    dialoguetext = "It'd be neat to have a few more";
+                    dialoguetext2 = "controllers in our game room.";
+                    dialoguetext3 = "I’ve seen them pop up around";
+                    dialoguetext4 = "Orange and Red seeds.";
+                    currentperson = community1;
+                } else if (todaysdialogue == 21){
+                    dialoguetext = "Have you seen any onions with wires";
+                    dialoguetext2 = "sticking out the tops? I’m thinking";
+                    dialoguetext3 = "about trying one on a burger,";
+                    dialoguetext4 = "but I’m scared.";
+                    currentperson = community3;
+                } else if (todaysdialogue == 24){
+                    dialoguetext = "Never tell a joke near a patch of";
+                    dialoguetext2 = "red plants during summer or you'll have";
+                    dialoguetext3 = "bad luck for the rest of your life!";
+                    dialoguetext4 = " ";
+                    currentperson = community2;
+                }
+
+            // other one-off sources of dialogue are down here 
+            } else if (dialoguetype == "red3"){
+                dialoguetext = "I'm pretty sure Snake";
+                dialoguetext2 = "noticed the flowers.";
+                dialoguetext3 = "Thank you for your help!";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Red Flower Destination!"
+                score += 100
+                dialogueother.push("weird1");
+            } else if (dialoguetype == "blue15"){
+                dialoguetext = "The ritual has begun.";
+                dialoguetext2 = "The mayor will remain young forever.";
+                dialoguetext3 = "We hope he has your support for the";
+                dialoguetext4 = "many, many terms to come!";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Blue Sky Thinker!"
+                score += 1000;
+                dialogueother.push("weird2");
+            } else if (dialoguetype == "orange40"){
+                dialoguetext = "Here's hoping the bugs don't get";
+                dialoguetext2 = "us this time!";
+                dialoguetext3 = " ";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Hates bugs!"
+                score += 1000;
+                dialogueother.push("weird3");
+            } else if (dialoguetype == "red100"){
+                dialoguetext = "Parks look so much better after";
+                dialoguetext2 = "a rejeuvenation. Sometimes I think";
+                dialoguetext3 = "we should keep them fenced off forever!";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Remarkable citizen!"
+                score += 1000;
+            } else if (dialoguetype == "pink20"){
+                dialoguetext = "Thank you! If you'd like to dispute";
+                dialoguetext2 = "the fees on your score, you may contact";
+                dialoguetext3 = "the Municipal Tax Office on Wednesdays";
+                dialoguetext4 = "between 2:15 and 2:34 PM.";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Best points!"
+                score += 4430;
+
+            } else if (dialoguetype == "pink30"){
+                dialoguetext = "The mayor loved his big cake!";
+                dialoguetext2 = "By the way, were those flowers edible?";
+                dialoguetext3 = " ";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Floral Superstar!"
+                score += 3000;
+
+            } else if (dialoguetype == "purple8"){
+                dialoguetext = "We look forward to all the rich new";
+                dialoguetext2 = "taxpayers you're bringing us with these";
+                dialoguetext3 = "beautiful purple flowers! Thanks again.";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                tasksign = "none";
+                currenttitle = "Mr. Property Value!"
+                score += 2500;
+            } else if (dialoguetype== "bigpink"){
+                dialoguetext = "You planted all these yourself?";
+                dialoguetext2 = "What a model citizen.";
+                dialoguetext3 = " ";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                currenttitle = "Pretty in Pink!"
+                score += 20000;
+            } else if (dialoguetype== "bigblue"){
+                dialoguetext = "We were all talking down at City Hall";
+                dialoguetext2 = "and we just love how economical";
+                dialoguetext3 = "you're being. Keep it up!";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                currenttitle = "Successful person!"
+                score += 20000;
+            } else if (dialoguetype== "bigorange"){
+                dialoguetext = "We got together and made you this award.";
+                dialoguetext2 = "What a go-getter! Great job.";
+                dialoguetext3 = " ";
+                dialoguetext4 = " ";
+                currentperson = cityman;
+                currenttitle = "Orange God!"
+                score += 20000;
+            } else if (dialoguetype== "bigpurple"){
+                dialoguetext = "Visitors are coming from all over just to";
+                dialoguetext2 = "get a selfie with your flowers! ";
+                dialoguetext3 = "The parking revenue alone ... wow!";
+                dialoguetext4 = "Keep it up!";
+                currentperson = cityman;
+                currenttitle = "Purple Parker!"
+                score += 20000;
+            } else if (dialoguetype== "bigred"){
+                dialoguetext = "At this rate, we'll be winning the";
+                dialoguetext2 = "world record for city with the";
+                dialoguetext3 = "most consistent flowers!";
+                dialoguetext4 = "Great job.";
+                currentperson = cityman;
+                currenttitle = "Red Guinness!"
+                score += 20000;
+            } else if (dialoguetype== "weird1"){
+                dialoguetext = "I had a weird dream about mixing";
+                dialoguetext2 = "different flower seeds together.";
+                dialoguetext3 = "I think I'll write a poem about it.";
+                dialoguetext4 = " ";
+                currentperson = community4;
+            } else if (dialoguetype== "weird2"){
+                dialoguetext = "I tripped over a Lightbulb in the dirt";
+                dialoguetext2 = "the other day. It was surrounded by";
+                dialoguetext3 = "Purple and Blue seeds.";
+                dialoguetext4 = "I wonder who left it there?";
+                currentperson = community3;
+            } else if (dialoguetype== "weird3"){
+                dialoguetext = "Can you even imagine a world without";
+                dialoguetext2 = "strawberries and oranges?";
+                dialoguetext3 = "Without bees or butterflies,";
+                dialoguetext4 = "it could happen!";
+                currentperson = community1;
+            } 
+        }
+
+        // check if any dialogue scenes have been triggered
+
+        // first: check all day triggers 
+        function dialoguedaychecker(){
+            let isdialogueday;
+            let dontcontinue = true;
+            dialoguedays.forEach(function (thisday, d){
+                if (thisday == daycounter){
+                    if (dontcontinue){
+                        dialoguetype = "day";
+                        todaysdialogue = thisday;
+                        dialoguedays.splice(d,1);
+                        isdialogueday = true; 
+                        dontcontinue = false;
+                    }
+                } else {
+                    if (dialoguedays.length == d){
+                        isdialogueday = false;
+                    }
+                }
+            })
+            if (isdialogueday){
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // second: check all score triggers
+        function dialoguescorechecker(){
+            let isdialoguescore;
+            let dontcontinue = true;
+            dialoguescores.forEach(function (thisscore, d){
+                if (score >= thisscore){
+                    if (dontcontinue){
+                        dialoguetype = "score";
+                        todaysdialogue = thisscore;
+                        dialoguescores.splice(d,1);
+                        isdialoguescore = true;
+                        dontcontinue = false;
+                    }
+                } else {
+                    if (dialoguescore.length == d){
+                        isdialoguescore = false;
+                    }
+                }
+            })
+            if (isdialoguescore){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        // third: check all plant diversity triggers;
+        function dialoguediversitychecker(){
+            let isdialoguediversity;
+            let dontcontinue = true;
+            dialoguediversity.forEach(function (thisdiv, d){
+                if (diversity >= thisdiv){
+                    if (dontcontinue){
+                        dialoguetype = "diversity";
+                        todaysdialogue = thisdiv;
+                        dialoguediversity.splice(d,1);
+                        isdialoguediversity = true; 
+                        dontcontinue = false;
+                    }
+                } else {
+                    if (dialoguediversity.length == d){
+                        isdialoguediversity = false;
+                    }
+                }
+            })
+            if (isdialoguediversity){
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        // last: check for any other triggers
+        function dialogueotherchecker(){
+            if (dialogueother.length >= 1){
+                dialoguetype = dialogueother[0];
+                dialogueother.splice(0,1);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function completionchecker(){
+            if (flower2score>=3 && daycounter>3){
+                dialogueother.push("red3")
+            }
+
+            if (flower1score>=3 && daycounter > 15){
+                dialogueother.push("blue15")
+            }
+
+            if (flower5score>=10 && daycounter > 40){
+                dialogueother.push("orange40")
+            } 
+            
+            if (flower2score>=50 && daycounter>100){
+                dialogueother.push("red100");
+            }
+
+            if (flower4score>=3 && daycounter>20){
+                dialogueother.push("pink20")
+            }
+
+            if (flower4score>=12 && daycounter>30){
+                dialogueother.push("pink30")
+            }
+
+            if (flower3score>=6 && daycounter>8){
+                dialogueother.push("purple8")
+            }
+
+            if (flower1score>=30){
+                dialogueother.push("bigblue")
+            }
+
+            if (flower5score>=30){
+                dialogueother.push("bigorange")
+            }
+
+            if (flower4score>=30){
+                dialogueother.push("bigpink")
+            }
+
+            if (flower3score>=30){
+                dialogueother.push("bigpurple")
+            }
+            
+            if (flower2score>=30){
+                dialogueother.push("bigred")
+            }
+        }
+        
+        // if this is the first time the player has seen the flower, the player gets one diversity point (but they won't get a point for this flower again)
+        function countflower(thisflower){
+            if (thisflower == false){
+                diversity +=1;
+                thisflower = true;
+            }
+        }
+
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
