@@ -68,6 +68,22 @@
         // these variables hold the text for each dialogue encounter (they change depending on the active scene)
         var dialoguetext, dialoguetext2, dialoguetext3, dialoguetext4
 
+        var red3check = true;
+        var blue15check = true;
+        var orange40check = true;
+        var red100check = true;
+        var pink20check = true;
+        var pink30check = true;
+        var purple8check = true;
+        var bigbluecheck = true;
+        var bigorangecheck = true;
+        var bigpinkcheck = true;
+        var bigredcheck = true;
+        var bigpurplecheck = true;
+        var weird1check = true;
+        var weird2check = true;
+        var weird3check = true;
+
         // when the game is paused, this variable changes the background of the game to a certain colour
         var pausefilter;
 
@@ -144,6 +160,7 @@
             dialoguescores = [50000, 1200, 800, 700, 500];
             dialoguediversity = [21,19,16,13,10,7,5,3,1];
             dialogueother = [];
+            
 
             // preload background and UI elements
             bitpotion = loadFont('assets/BitPotion.ttf');
@@ -547,6 +564,9 @@
             // if there is dialogue, display the person and the text 
             if (gamestate == "dialogue") {
                 dialogue();
+                gamestate = "showdialogue"
+            } 
+            if (gamestate == "showdialogue"){
                 image(currentperson, unitwidth * 4, gameHeight - (unitwidth * 8), unitwidth * 3, unitwidth * 5);
                 push();
                 strokeWeight(outlineweight);
@@ -561,13 +581,14 @@
                 text(dialoguetext4, (unitwidth * 4.3), (gameHeight - (unitwidth/2)));
                 pop();
             }
+                
 
 
             // if the player has used up all their turns for one day, this game state turns the seeds into flowers,
             // and updates the day and turn counters to reflect that a day has passed. 
 
             if (gamestate == "endofday") {
-                console.log(dialoguediversity[0]);
+                console.log(dialogueother);
                 // clone the grid to keep track of changes during the end of day phase without having those changes disrupt the seeds (ie. if a seed becomes a flower, it should still be recognized as a seed by adjacent seeds until the end of the phase)
                 const cloneGrid = JSON.parse(JSON.stringify(grid));
 
@@ -719,11 +740,13 @@
                 completionchecker();
 
                 // check to see if any dialogue scenes will be played in the next day 
-                if (dialoguedaychecker()){
+                if (dialogueotherchecker()){
+                    gamestate = "dialogue";
+                } else if (dialoguedaychecker()){
                     gamestate = "dialogue";
                 } else if (dialoguediversitychecker()){
                     gamestate = "dialogue";
-                } else if (dialogueotherchecker()){
+                } else if (dialoguescorechecker()){
                     gamestate = "dialogue";
 
                     // if there are no applicable dialogue scenes, the game proceeds to the next day as normal
@@ -772,7 +795,7 @@
                 gamestate = "neutral";
             }
 
-            else if (gamestate == "dialogue") {
+            else if (gamestate == "showdialogue") {
                 gamestate = "neutral";
             }
             
@@ -1188,7 +1211,7 @@
                 } else if (todaysdialogue == 19){
                     dialoguetext = "It'd be neat to have a few more";
                     dialoguetext2 = "controllers in our game room.";
-                    dialoguetext3 = "I’ve seen them pop up around";
+                    dialoguetext3 = "I've seen them pop up around";
                     dialoguetext4 = "Orange and Red seeds.";
                     currentperson = community1;
                 } else if (todaysdialogue == 21){
@@ -1215,7 +1238,10 @@
                 tasksign = "none";
                 currenttitle = "Red Flower Destination!"
                 score += 100
-                dialogueother.push("weird1");
+                if (weird1check == true){
+                    dialogueother.push("weird1");
+                    weird1check = false;
+                }
             } else if (dialoguetype == "blue15"){
                 dialoguetext = "The ritual has begun.";
                 dialoguetext2 = "The mayor will remain young forever.";
@@ -1225,7 +1251,10 @@
                 tasksign = "none";
                 currenttitle = "Blue Sky Thinker!"
                 score += 1000;
-                dialogueother.push("weird2");
+                if (weird2check == true){
+                    dialogueother.push("weird2");
+                    weird2check = false;
+                }
             } else if (dialoguetype == "orange40"){
                 dialoguetext = "Here's hoping the bugs don't get";
                 dialoguetext2 = "us this time!";
@@ -1235,7 +1264,10 @@
                 tasksign = "none";
                 currenttitle = "Hates bugs!"
                 score += 1000;
-                dialogueother.push("weird3");
+                if (weird3check == true){
+                    dialogueother.push("weird3");
+                    weird3check = false;
+                }
             } else if (dialoguetype == "red100"){
                 dialoguetext = "Parks look so much better after";
                 dialoguetext2 = "a rejeuvenation. Sometimes I think";
@@ -1377,7 +1409,7 @@
                         dontcontinue = false;
                     }
                 } else {
-                    if (dialoguescore.length == d){
+                    if (dialoguescores.length == d){
                         isdialoguescore = false;
                     }
                 }
@@ -1417,6 +1449,9 @@
 
         // last: check for any other triggers
         function dialogueotherchecker(){
+            // if a dialogue in the "other" category has been used already, it gets added to the "dialogueotherdone" array. 
+            // here, check if any dialogue in the "other" category has been used already. if so, remove it.
+            // all of this is so that "other" category dialogue does not repeat. 
             if (dialogueother.length >= 1){
                 dialoguetype = dialogueother[0];
                 dialogueother.splice(0,1);
@@ -1428,51 +1463,87 @@
 
         function completionchecker(){
             if (flower2score>=3 && daycounter>3){
-                dialogueother.push("red3")
+                if (red3check == true) {
+                    dialogueother.push("red3")
+                    red3check = false;
+                }
             }
 
             if (flower1score>=3 && daycounter > 15){
-                dialogueother.push("blue15")
+                if (blue15check == true) {
+                    dialogueother.push("blue15")
+                    blue15check = false;
+                }
             }
 
             if (flower5score>=10 && daycounter > 40){
-                dialogueother.push("orange40")
+                if (orange40check == true) {
+                    dialogueother.push("orange40")
+                    orange40check = false;
+                }
             } 
             
             if (flower2score>=50 && daycounter>100){
-                dialogueother.push("red100");
+                if (red100check == true) {
+                    dialogueother.push("red100")
+                    red100check = false;
+                }
             }
 
             if (flower4score>=3 && daycounter>20){
-                dialogueother.push("pink20")
+                if (pink20check == true) {
+                    dialogueother.push("pink20")
+                    pink20check = false;
+                }
             }
 
             if (flower4score>=12 && daycounter>30){
-                dialogueother.push("pink30")
+                if (pink30check == true) {
+                    dialogueother.push("pink30")
+                    pink30check = false;
+                }
             }
 
             if (flower3score>=6 && daycounter>8){
-                dialogueother.push("purple8")
+                if (purple8check == true) {
+                    dialogueother.push("purple8")
+                    purple8check = false;
+                }
             }
 
             if (flower1score>=30){
-                dialogueother.push("bigblue")
+                if (bigbluecheck == true) {
+                    dialogueother.push("bigblue")
+                    bigbluecheck = false;
+                }
             }
 
             if (flower5score>=30){
-                dialogueother.push("bigorange")
+                if (bigorangecheck == true) {
+                    dialogueother.push("bigorange")
+                    bigorangecheck = false;
+                }
             }
 
             if (flower4score>=30){
-                dialogueother.push("bigpink")
+                if (bigpinkcheck == true) {
+                    dialogueother.push("bigpink")
+                    bigpinkcheck = false;
+                }
             }
 
             if (flower3score>=30){
-                dialogueother.push("bigpurple")
+                if (bigpurplecheck == true) {
+                    dialogueother.push("bigpurple")
+                    bigpurplecheck = false;
+                }
             }
             
             if (flower2score>=30){
-                dialogueother.push("bigred")
+                if (bigredcheck == true) {
+                    dialogueother.push("bigred")
+                    bigredcheck = false;
+                }
             }
         }
         
