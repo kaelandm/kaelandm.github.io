@@ -6,6 +6,7 @@
     <title></title>
     <script src="p5.js"></script>
     <script src="p5.play.js"></script>
+    <script src="p5.sound.js"></script>
     <script>
         // declaring variables
         // the whole page is divided into units, which each take up a fraction of the page's width. this is so that the game will scale according to the width of your display.
@@ -15,7 +16,7 @@
         // this variable will contain all of the information to generate the grid of plants. 
         var grid
         // this will power the game's state machine, which decides when players can perform certain actions. 
-        var gamestate = "neutral"
+        var gamestate = "start"
         // these variables keep track of how many actions players have per turn, and how many days have passed since the start of the game. 
         var turncounter = 3
         var daycounter = 1
@@ -26,7 +27,7 @@
         var seed1buttonY;
         var seed2buttonY;
         var seed3buttonY;
-        var mulchX, mulchY;
+        var mulchY;
 
         // these variables locate the pause button at the top left
         var pauseX;
@@ -48,7 +49,7 @@
         var gridtop
 
         // these variables are UI/background images 
-        var soil, path, fence, stand, singlepath, mulch, calendar, pause; 
+        var soil, path, fence, stand, singlepath, mulch, calendar, pause, logo, uimenu;
 
         // these variables are images for the sign, which displays different images depending on what flowers the city wants
         var sign, flower1sign, flower2sign, flower3sign, flower4sign, flower5sign;
@@ -64,6 +65,9 @@
 
         // this variable keeps track of how upgraded the building is
         var buildinglevel = 0;
+        var buildinglevelbefore = 0;
+
+        var banner1,banner2,banner3,banner4,banner5,banner6,banner7,banner8,banner9,banner10,banner11,banner12,banner13,banner14;
 
         // these variables hold the text for each dialogue encounter (they change depending on the active scene)
         var dialoguetext, dialoguetext2, dialoguetext3, dialoguetext4
@@ -109,26 +113,29 @@
         // this variable counts how many flowers the player has seen
         var diversity = 0;
 
-        var seenflower12 = false;
-        var seenflower13 = false; 
-        var seenflower14 = false;
-        var seenflower15 = false;
-        var seenflower21 = false;
-        var seenflower23 = false;
-        var seenflower24 = false;
-        var seenflower25 = false;
-        var seenflower31 = false;
-        var seenflower32 = false;
-        var seenflower34 = false;
-        var seenflower35 = false;
-        var seenflower41 = false;
-        var seenflower42 = false;
-        var seenflower43 = false;
-        var seenflower45 = false;
-        var seenflower51 = false;
-        var seenflower52 = false;
-        var seenflower53 = false;
-        var seenflower54 = false;
+        var seenFlowerMap = {
+            "seenflower12": false,
+            "seenflower13": false,
+            "seenflower14": false,
+            "seenflower15": false,
+            "seenflower21": false,
+            "seenflower23": false,
+            "seenflower24": false,
+            "seenflower25": false,
+            "seenflower31": false,
+            "seenflower32": false,
+            "seenflower34": false,
+            "seenflower35": false,
+            "seenflower41": false,
+            "seenflower42": false,
+            "seenflower43": false,
+            "seenflower45": false,
+            "seenflower51": false,
+            "seenflower52": false,
+            "seenflower53": false,
+            "seenflower54": false,
+        }
+
 
         // these variables are arrays that hold all of the possible dialogue triggers
         var dialoguedays, dialoguescores, dialoguediversity, dialogueother
@@ -141,6 +148,9 @@
         // the specific information for that scene
         var todaysdialogue;
         var dialoguetype;
+
+        // these variables are arrays that hold the sounds
+        var bins, plantings
 
         function preload() {
             // the grid is coded as an array made up of arrays. each array-within-the-array represents a column. 
@@ -161,7 +171,6 @@
             dialoguediversity = [21,19,16,13,10,7,5,3,1];
             dialogueother = [];
             
-
             // preload background and UI elements
             bitpotion = loadFont('assets/BitPotion.ttf');
             soil = loadImage('assets/soil.png');
@@ -172,6 +181,8 @@
             mulch = loadImage('assets/mulch.png');
             calendar = loadImage('assets/calendar.png');
             pause = loadImage('assets/pause.png');
+            logo = loadImage('assets/logo.png');
+            uimenu = loadImage('assets/uimenu.png');
 
             action3 = loadImage('assets/action3.png');
             action2 = loadImage('assets/action2.png');
@@ -253,6 +264,38 @@
             flower53 = loadImage('assets/plants/flower53.png');
             flower54 = loadImage('assets/plants/flower54.png');
 
+            // preload UI banners
+            banner1 = loadImage('assets/banners/banner1.png');
+            banner2 = loadImage('assets/banners/banner2.png');
+            banner3 = loadImage('assets/banners/banner3.png');
+            banner4 = loadImage('assets/banners/banner4.png');
+            banner5 = loadImage('assets/banners/banner5.png');
+            banner6 = loadImage('assets/banners/banner6.png');
+            banner7 = loadImage('assets/banners/banner7.png');
+            banner8 = loadImage('assets/banners/banner8.png');
+            banner9 = loadImage('assets/banners/banner9.png');
+            banner10 = loadImage('assets/banners/banner10.png');
+            banner11 = loadImage('assets/banners/banner11.png');
+            banner12 = loadImage('assets/banners/banner12.png');
+            banner13 = loadImage('assets/banners/banner13.png');
+
+            // preload sounds 
+            bin1 = loadSound('assets/sounds/bin1.mp3');
+            bin2 = loadSound('assets/sounds/bin2.mp3');
+            pick = loadSound('assets/sounds/pickup.mp3');
+            planting1 = loadSound('assets/sounds/planting1.mp3');
+            planting2 = loadSound('assets/sounds/planting2.mp3');
+            planting3 = loadSound('assets/sounds/planting3.mp3');
+            planting4 = loadSound('assets/sounds/planting4.mp3');
+            upgrade = loadSound('assets/sounds/upgrade.mp3');
+            techstem = loadSound('assets/sounds/techstem.mp3');
+            organicstem = loadSound('assets/sounds/organicstem.mp3');
+            defaultstem = loadSound('assets/sounds/defaultstem.mp3');
+
+            bins = [bin1,bin2];
+            plantings = [planting1,planting2,planting3,planting4];
+
+            // put sounds into arrays
         }
 
         function setup() {
@@ -283,8 +326,7 @@
             pauseX = unitwidth;
             pauseY = unitwidth;
             gridtop = unitwidth * 3;
-            mulchX = gridmargin-(unitwidth*2);
-            mulchY = gridtop+unitwidth;
+            mulchY = gridtop+(unitwidth*2);
 
             resizeCanvas(gameWidth, gameHeight);
 
@@ -307,18 +349,18 @@
             } else if (buildinglevel == 5){
                 image(building5, (gridmargin - (unitwidth * 2)), 0, unitwidth * 9, unitwidth * 2);
             }
-            image(calendar,gridmargin-(unitwidth*4),gridtop+unitwidth,unitwidth,unitwidth);
+            image(calendar,gridmargin-(unitwidth*3),gridtop+unitwidth,unitwidth,unitwidth);
             image(path, gridmargin - unitwidth, unitwidth * 2, unitwidth * 6, unitwidth);
 
             // draw turn counter indicator depending on how many actions left in the day 
             if (turncounter==3){
-                image(action3,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+                image(action3,gridmargin-(unitwidth*3),gridtop+(unitwidth*2),unitwidth,unitwidth);
             } else if (turncounter==2){
-                image(action2,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+                image(action2,gridmargin-(unitwidth*3),gridtop+(unitwidth*2),unitwidth,unitwidth);
             } else if (turncounter==1){
-                image(action1,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+                image(action1,gridmargin-(unitwidth*3),gridtop+(unitwidth*2),unitwidth,unitwidth);
             } else {
-                image(action0,gridmargin-(unitwidth*4),gridtop+(unitwidth*3),unitwidth,unitwidth);
+                image(action0,gridmargin-(unitwidth*3),gridtop+(unitwidth*2),unitwidth,unitwidth);
             }
 
             // draw signs depending on which flower is wanted 
@@ -439,8 +481,8 @@
                 noStroke();
             }
             noFill();
-            image(mulch, mulchX, mulchY,unitwidth,unitwidth);
-            square(mulchX,mulchY,unitwidth);
+            image(mulch, seed2buttonX, mulchY,unitwidth,unitwidth);
+            square(seed2buttonX,mulchY,unitwidth);
             pop();
 
             // draw the buttons on the right side 
@@ -525,28 +567,136 @@
             // if the player is in the menu, draw the menu
             if (gamestate == "menu") {
                 push();
-                
                 pausefilter.setAlpha(165);
                 fill(pausefilter);
                 rect(0, 0, gameWidth, gameHeight);
                 strokeWeight(outlineweight);
                 stroke(255);
-                fill(0);
+                fill(dark);
                 rect(0, 0, unitwidth*8, gameHeight);
                 fill(255);
-                noStroke();
-                text("Title: ",unitwidth,unitwidth*2)
-                text(currenttitle,unitwidth,unitwidth*4)
-                text("Score: ",unitwidth,unitwidth*6)
-                text(score,unitwidth,unitwidth*8);
+                stroke(dark);
+                strokeWeight(3);
+                if (currenttitle == "Constituent. Taxpayer?"){
+                    image(banner1,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Fancy Lads Scholar!"){
+                    image(banner13,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Red Flower Destination!"){
+                    image(banner2,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Blue Sky Thinker!"){
+                    image(banner3,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Hates bugs!"){
+                    image(banner4,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Red-markable citizen!"){
+                    image(banner5,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Best points!"){
+                    image(banner6,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Floral Superstar!"){
+                    image(banner7,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Mr. Property Value!"){
+                    image(banner8,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Pretty in Pink!"){
+                    image(banner9,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Blu-ccessful person!"){
+                    image(banner10,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Orange God!"){
+                    image(banner11,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                } else if (currenttitle == "Purple Parker!"){
+                    image(banner12,unitwidth/2,0,unitwidth*7,unitwidth*2);
+                }
+                textSize(unitwidth*0.6);
+                text(currenttitle,unitwidth*2.1,unitwidth*1.35)
+                textSize(unitwidth);
+                text("Score: " + score,unitwidth,unitwidth*3)
+                
+                if (flower1score>0){
+                    image(flower1,unitwidth,unitwidth*4,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower12"]){
+                    image(flower12,unitwidth*2,unitwidth*4,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower13"]){
+                    image(flower13,unitwidth*3,unitwidth*4,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower14"]){
+                    image(flower14,unitwidth*4,unitwidth*4,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower15"]){
+                    image(flower15,unitwidth*5,unitwidth*4,unitwidth,unitwidth)
+                }
+                if (flower2score>0){
+                    image(flower2,unitwidth,unitwidth*5,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower21"]){
+                    image(flower21,unitwidth*2,unitwidth*5,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower23"]){
+                    image(flower23,unitwidth*3,unitwidth*5,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower24"]){
+                    image(flower24,unitwidth*4,unitwidth*5,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower25"]){
+                    image(flower25,unitwidth*5,unitwidth*5,unitwidth,unitwidth)
+                }
+                if (flower3score>0){
+                    image(flower3,unitwidth,unitwidth*6,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower31"]){
+                    image(flower31,unitwidth*2,unitwidth*6,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower32"]){
+                    image(flower32,unitwidth*3,unitwidth*6,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower34"]){
+                    image(flower34,unitwidth*4,unitwidth*6,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower35"]){
+                    image(flower35,unitwidth*5,unitwidth*6,unitwidth,unitwidth)
+                }
+                if (flower4score>0){
+                    image(flower4,unitwidth,unitwidth*7,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower41"]){
+                    image(flower41,unitwidth*2,unitwidth*7,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower42"]){
+                    image(flower42,unitwidth*3,unitwidth*7,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower43"]){
+                    image(flower43,unitwidth*4,unitwidth*7,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower45"]){
+                    image(flower45,unitwidth*5,unitwidth*7,unitwidth,unitwidth)
+                }
+                if (flower5score>0){
+                    image(flower5,unitwidth,unitwidth*8,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower51"]){
+                    image(flower51,unitwidth*2,unitwidth*8,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower52"]){
+                    image(flower52,unitwidth*3,unitwidth*8,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower53"]){
+                    image(flower53,unitwidth*4,unitwidth*8,unitwidth,unitwidth)
+                }
+                if (seenFlowerMap["seenflower54"]){
+                    image(flower54,unitwidth*5,unitwidth*8,unitwidth,unitwidth)
+                }
+
                 pop();
 
                 // if the player is not in the menu, draw the pause button and counters for the number of actions and the day 
             } else {
                 push();
                 fill(255, 255, 255);
-                // text('Actions: ' + turncounter, (unitwidth * 2), (unitwidth * 5));
-                text(daycounter, (unitwidth*3.4), (unitwidth * 4.9));
+                if (daycounter>9){
+                    text(daycounter, (unitwidth*4.25), (unitwidth * 4.9));
+                } else {
+                    text(daycounter, (unitwidth*4.4), (unitwidth * 4.9));
+                }
+                
                 pop();
                 push();
                 if (sidelight() == "menu") {
@@ -571,7 +721,7 @@
                 push();
                 strokeWeight(outlineweight);
                 stroke(255);
-                fill(0, 0, 0);
+                fill(dark);
                 rect(unitwidth * 3.5, gameHeight - (unitwidth * 3), unitwidth * 13, unitwidth * 3);
                 noStroke();
                 fill(255, 255, 255);
@@ -581,14 +731,44 @@
                 text(dialoguetext4, (unitwidth * 4.3), (gameHeight - (unitwidth/2)));
                 pop();
             }
-                
+
+            if (gamestate == "start"){
+                push();
+                fill(dark);
+                noStroke();
+                rect(0,0,gameWidth,gameHeight);
+                image(logo,gridmargin-unitwidth,gridtop,unitwidth*8,unitwidth*2)
+                fill(255);
+                text("click to start",gridmargin+unitwidth,gridtop+(unitwidth*5));
+                pop();
+            }
+
+            if (gamestate == "tutorial"){
+                push();
+                fill(dark);
+                noStroke();
+                rect(0,0,gameWidth,gameHeight);
+                fill(255);
+                text("The city has generously tasked you with the (unpaid)",unitwidth,unitwidth);
+                text("work of growing a garden outside the old community center!",unitwidth,gridtop-unitwidth);
+                image(seed2,unitwidth*5,gridtop,unitwidth,unitwidth);
+                image(seed2,unitwidth*6,gridtop,unitwidth,unitwidth);
+                image(seed2,unitwidth*7,gridtop,unitwidth,unitwidth);
+                image(flower2,unitwidth*10,gridtop,unitwidth,unitwidth);
+                image(flower2,unitwidth*11,gridtop,unitwidth,unitwidth);
+                image(flower2,unitwidth*12,gridtop,unitwidth,unitwidth);
+                text("Plant seeds of the same type next to each other to grow",unitwidth,gridtop+(unitwidth*2));
+                text("neat, tidy, colourful flowers. Send those flowers to the city",unitwidth,gridtop+(unitwidth*3));
+                text("to earn points, special titles, and the respect and admiration",unitwidth,gridtop+(unitwidth*4));
+                text("of the entire municipal board!",unitwidth,gridtop+(unitwidth*5));
+            }
 
 
             // if the player has used up all their turns for one day, this game state turns the seeds into flowers,
             // and updates the day and turn counters to reflect that a day has passed. 
 
             if (gamestate == "endofday") {
-                console.log(dialogueother);
+                console.log(diversity);
                 // clone the grid to keep track of changes during the end of day phase without having those changes disrupt the seeds (ie. if a seed becomes a flower, it should still be recognized as a seed by adjacent seeds until the end of the phase)
                 const cloneGrid = JSON.parse(JSON.stringify(grid));
 
@@ -631,16 +811,16 @@
                                 flower1score += 1;
                                 cloneGrid[y][x] = "flower1"
                             } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed2counter) {
-                                countflower(seenflower12);
+                                countflower("seenflower12");
                                 cloneGrid[y][x] = "flower12"
                             } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed3counter) {
-                                countflower(seenflower13);
+                                countflower("seenflower13");
                                 cloneGrid[y][x] = "flower13"
                             } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed4counter) {
-                                countflower(seenflower14);
+                                countflower("seenflower14");
                                 cloneGrid[y][x] = "flower14"
                             } else if (findmost(seed2counter, seed3counter, seed4counter, seed5counter) == seed5counter) {
-                                countflower(seenflower15);
+                                countflower("seenflower15");
                                 cloneGrid[y][x] = "flower15"
                             }
                         } else if (grid[y][x] == "seed2") {
@@ -648,16 +828,16 @@
                                 flower2score +=1;
                                 cloneGrid[y][x] = "flower2"
                             } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed1counter) {
-                                countflower(seenflower21);
+                                countflower("seenflower21");
                                 cloneGrid[y][x] = "flower21"
                             } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed3counter) {
-                                countflower(seenflower23);
+                                countflower("seenflower23");
                                 cloneGrid[y][x] = "flower23"
                             } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed4counter) {
-                                countflower(seenflower24);
+                                countflower("seenflower24");
                                 cloneGrid[y][x] = "flower24"
                             } else if (findmost(seed1counter, seed3counter, seed4counter, seed5counter) == seed5counter) {
-                                countflower(seenflower25);
+                                countflower("seenflower25");
                                 cloneGrid[y][x] = "flower25"
                             }
                         } else if (grid[y][x] == "seed3") {
@@ -665,16 +845,16 @@
                                 flower3score+=1;
                                 cloneGrid[y][x] = "flower3"
                             } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed1counter) {
-                                countflower(seenflower31);
+                                countflower("seenflower31");
                                 cloneGrid[y][x] = "flower31"
                             } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed2counter) {
-                                countflower(seenflower32);
+                                countflower("seenflower32");
                                 cloneGrid[y][x] = "flower32"
                             } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed4counter) {
-                                countflower(seenflower34);
+                                countflower("seenflower34");
                                 cloneGrid[y][x] = "flower34"
                             } else if (findmost(seed1counter, seed2counter, seed4counter, seed5counter) == seed5counter) {
-                                countflower(seenflower35);
+                                countflower("seenflower35");
                                 cloneGrid[y][x] = "flower35"
                             }
                         } else if (grid[y][x] == "seed4") {
@@ -682,16 +862,16 @@
                                 flower4score+=1;
                                 cloneGrid[y][x] = "flower4"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed1counter) {
-                                countflower(seenflower41);
+                                countflower("seenflower41");
                                 cloneGrid[y][x] = "flower41"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed2counter) {
-                                countflower(seenflower42);
+                                countflower("seenflower42");
                                 cloneGrid[y][x] = "flower42"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed3counter) {
-                                countflower(seenflower43);
+                                countflower("seenflower43");
                                 cloneGrid[y][x] = "flower43"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed5counter) == seed5counter) {
-                                countflower(seenflower45);
+                                countflower("seenflower45");
                                 cloneGrid[y][x] = "flower45"
                             }
                         } else if (grid[y][x] == "seed5") {
@@ -699,16 +879,16 @@
                                 flower5score+=1;
                                 cloneGrid[y][x] = "flower5"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed1counter) {
-                                countflower(seenflower51);
+                                countflower("seenflower51");
                                 cloneGrid[y][x] = "flower51"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed2counter) {
-                                countflower(seenflower52);
+                                countflower("seenflower52");
                                 cloneGrid[y][x] = "flower52"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed3counter) {
-                                countflower(seenflower53);
+                                countflower("seenflower53");
                                 cloneGrid[y][x] = "flower53"
                             } else if (findmost(seed1counter, seed2counter, seed3counter, seed4counter) == seed4counter) {
-                                countflower(seenflower54);
+                                countflower("seenflower54");
                                 cloneGrid[y][x] = "flower54"
                             }
                         }
@@ -723,6 +903,8 @@
                 grid = cloneGrid;
                 turncounter = 3;
                 daycounter += 1;
+
+                buildinglevelbefore = buildinglevel
                 if (diversity>=25){
                     buildinglevel = 5;
                 } else if (diversity>=20){
@@ -738,6 +920,30 @@
                 }
                 // check to see if any tasks have been completed
                 completionchecker();
+
+                // if the building level is going up, play the upgrade sound effect
+                if (buildinglevelbefore<buildinglevel){
+                    upgrade.play();
+                }
+
+                // adjust sound levels depending on how many tech vs pure flowers
+                if (soundflowers()=="empty"){
+                    defaultstem.setVolume(0.8);
+                    organicstem.setVolume(0);
+                    techstem.setVolume(0);
+                } else if (soundflowers()=="similar"){
+                    defaultstem.setVolume(0.6);
+                    organicstem.setVolume(0.6);
+                    techstem.setVolume(0.6);
+                } else if (soundflowers()=="tech"){
+                    defaultstem.setVolume(0.7);
+                    organicstem.setVolume(0);
+                    techstem.setVolume(0.7);
+                } else if (soundflowers()=="organic"){
+                    defaultstem.setVolume(0.7);
+                    organicstem.setVolume(0.7);
+                    techstem.setVolume(0);
+                }
 
                 // check to see if any dialogue scenes will be played in the next day 
                 if (dialogueotherchecker()){
@@ -797,7 +1003,68 @@
 
             else if (gamestate == "showdialogue") {
                 gamestate = "neutral";
+            } else if (gamestate == "tutorial"){
+                defaultstem.loop();
+                organicstem.loop();
+                techstem.loop();
+                defaultstem.setVolume(0.8);
+                organicstem.setVolume(0);
+                techstem.setVolume(0);
+                gamestate = "neutral";
+            } else if (gamestate == "start"){
+                gamestate = "tutorial";
+            } 
+            
+
+        }
+
+        // mobile version, identical to mouseclicked. will this work? 
+
+        function touchStarted() {
+            // remember the X and Y coordinates of the location where the click happened.
+            clickedX = int(mouseX);
+            clickedY = int(mouseY);
+            // this handles the start menu interactions
+            // if the game state is neutral, this means the player is not holding any seed. 
+            if (gamestate == "neutral") {
+                // check if the mouse was clicked on the buttons - if so, change the game state to reflect this. 
+                pickup();
+
+            } else if (gamestate == "mulch"){
+                mulcher();
             }
+
+            else if (gamestate == "holding1") {
+                holder("seed1");
+            }
+
+            else if (gamestate == "holding2") {
+                holder("seed2");
+            }
+
+            else if (gamestate == "holding3") {
+                holder("seed3");
+            }
+
+            else if (gamestate == "holding4") {
+                holder("seed4");
+            }
+
+            else if (gamestate == "holding5") {
+                holder("seed5");
+            }
+
+            else if (gamestate == "menu") {
+                gamestate = "neutral";
+            }
+
+            else if (gamestate == "showdialogue") {
+                gamestate = "neutral";
+            } else if (gamestate == "tutorial"){
+                gamestate = "neutral";
+            } else if (gamestate == "start"){
+                gamestate = "tutorial";
+            } 
             
 
         }
@@ -841,13 +1108,21 @@
 
         // this function highlights the correct square on the menu on the right side, when the mouse passes over that square 
         function sidelight() {
-            if (gamestate == "menu") {
+            if (gamestate == "start"){
+                return "none";
+            } else if (gamestate == "menu") {
                 return "none";
             } else if (gamestate == "dialogue") {
                 return "none";
+            } else if (gamestate == "tutorial"){
+                return "none";
             } else if (mouseX > seed2buttonX) {
                 if (mouseX < (seed2buttonX + unitwidth)) {
-                    if (mouseY > seed2buttonY) {
+                    if (mouseY > mulchY){
+                        if (mouseY< (mulchY + unitwidth)){
+                            return "mulch";
+                        }
+                    } else if (mouseY > seed2buttonY) {
                         if (mouseY < (seed2buttonY + unitwidth)) {
                             return "seed5"
                         }
@@ -855,7 +1130,7 @@
                         if (mouseY < (seed1buttonY + unitwidth)) {
                             return "seed4"
                         }
-                    }
+                    } 
                 }
             } else if (mouseX > seedbuttonX) {
                 if (mouseX < (seedbuttonX + unitwidth)) {
@@ -872,14 +1147,6 @@
                             return "seed1"
                         }
                     }
-                }
-            } else if (mouseX > mulchX){
-                if (mouseX < mulchX + unitwidth) { 
-                    if (mouseY > mulchY){
-                        if (mouseY<mulchY + unitwidth){
-                            return "mulch";
-                        }
-                    } 
                 }
             } else if (mouseX > pauseX) {
                 if (mouseX < pauseX + unitwidth) {
@@ -900,6 +1167,7 @@
                     rowofgrid.forEach(function (colofgrid, x) {
                         if (gridfinderX(x) == true) {
                             if (grid[y][x] == "empty") {
+                                plantings[int(random(4))].play();
                                 grid[y][x] = seed;
                                 turncounter -= 1;
                                 if (turncounter == 0) {
@@ -921,6 +1189,7 @@
                     rowofgrid.forEach(function (colofgrid, x) {
                         if (gridfinderX(x) == true) {
                             if (grid[y][x] !== "empty") {
+                                bins[int(random())].play();
                                 grid[y][x] = "empty";
                                 gamestate = "neutral";
                             }
@@ -1003,11 +1272,21 @@
             }
             else if (clickedX > seed2buttonX) {
                 if (clickedX < (seed2buttonX + unitwidth)) {
-                    if (clickedY > seed2buttonY) {
+                    if (clickedY > mulchY){
+                        if (clickedY < (mulchY+unitwidth)){
+                            if (gamestate == "mulch"){
+                                gamestate = "neutral";
+                            } else {
+                                bins[int(random())].play();
+                                gamestate = "mulch";
+                            }
+                        }
+                    } else if (clickedY > seed2buttonY) {
                         if (clickedY < (seed2buttonY + unitwidth)) {
                             if (gamestate == "holding5") {
                                 gamestate = "neutral";
                             } else {
+                                pick.play();
                                 gamestate = "holding5"
                             }
                         }
@@ -1017,6 +1296,7 @@
                                 gamestate = "neutral";
                             }
                             else {
+                                pick.play();
                                 gamestate = "holding4";
                             }
                         }
@@ -1029,6 +1309,7 @@
                             if (gamestate == "holding3") {
                                 gamestate = "neutral";
                             } else {
+                                pick.play();
                                 gamestate = "holding3"
                             }
                         }
@@ -1037,6 +1318,7 @@
                             if (gamestate == "holding2") {
                                 gamestate = "neutral";
                             } else {
+                                pick.play();
                                 gamestate = "holding2"
                             }
                         }
@@ -1045,24 +1327,13 @@
                             if (gamestate == "holding1") {
                                 gamestate = "neutral";
                             } else {
+                                pick.play();
                                 gamestate = "holding1"
                             }
                         }
                     }
                 }
-            } else if (clickedX > mulchX){
-                if (clickedX<(mulchX+unitwidth)){
-                    if (clickedY>mulchY){
-                        if (clickedY<mulchY+unitwidth){
-                            if (gamestate == "mulch"){
-                                gamestate = "neutral";
-                            } else {
-                                gamestate = "mulch";
-                            }
-                        }
-                    } 
-                }
-            }
+            } 
         }
 
         // this function is called from the grid generator and generates highlights and images for each unit in the garden 
@@ -1107,7 +1378,7 @@
                     tasksign = "blue";
                 } else if (todaysdialogue == 20){
                     dialoguetext = "We need all Pink flowers.";
-                    dialoguetext2 = "We’ll award you 8000 points for--";
+                    dialoguetext2 = "We'll award you 8000 points for--";
                     dialoguetext3 = "well, hold on, adjusting for inflation...";
                     dialoguetext4 = "and property tax... 4430 points.";
                     currentperson = cityman;
@@ -1152,12 +1423,12 @@
                     currentperson = community3;
                 } else if (todaysdialogue == 800){
                     dialoguetext = "Monoculture is one thing.";
-                    dialoguetext2 = "Growing a garden full of different plants?";
-                    dialoguetext3 = "Way harder. Way more beautiful, too.";
-                    dialoguetext4 = " ";
+                    dialoguetext2 = "Growing a garden full of different";
+                    dialoguetext3 = "plants? Way harder.";
+                    dialoguetext4 = "Way more beautiful, too.";
                     currentperson = community4;
                 } else if (todaysdialogue == 1200){
-                    dialoguetext = "I can’t stop thinking about what might";
+                    dialoguetext = "I can't stop thinking about what might";
                     dialoguetext2 = "happen if you place a blue seed";
                     dialoguetext3 = "next to a purple seed.";
                     dialoguetext4 = "Nothing? Probably nothing.";
@@ -1171,7 +1442,7 @@
                     dialoguetext2 = "As it grows, so do you as a gardener!";
                     dialoguetext3 = "Isn't that cool?";
                     dialoguetext4 = " ";
-                    currentperson = community2;
+                    currentperson = community1;
                 } else if (todaysdialogue == 3){
                     dialoguetext = "Make sure you plant flowers with enough";
                     dialoguetext2 = "room to spread! They will...";
@@ -1183,7 +1454,7 @@
                     dialoguetext2 = "It smells so nice!";
                     dialoguetext3 = " ";
                     dialoguetext4 = " ";
-                    currentperson = community1;
+                    currentperson = community2;
                 } else if (todaysdialogue == 7){
                     dialoguetext = "Fertilizing your garden has so many";
                     dialoguetext2 = "benefits! It introduces nitrogen";
@@ -1201,7 +1472,7 @@
                     dialoguetext2 = "red seeds next to orange ones";
                     dialoguetext3 = "boosts the WiFi.";
                     dialoguetext4 = " ";
-                    currentperson = community5;
+                    currentperson = community1;
                 } else if (todaysdialogue == 16){
                     dialoguetext = "My mom told me to go get some sun,";
                     dialoguetext2 = "but little does she know, I can just";
@@ -1213,7 +1484,7 @@
                     dialoguetext2 = "controllers in our game room.";
                     dialoguetext3 = "I've seen them pop up around";
                     dialoguetext4 = "Orange and Red seeds.";
-                    currentperson = community1;
+                    currentperson = community5;
                 } else if (todaysdialogue == 21){
                     dialoguetext = "Have you seen any onions with wires";
                     dialoguetext2 = "sticking out the tops? I’m thinking";
@@ -1238,6 +1509,7 @@
                 tasksign = "none";
                 currenttitle = "Red Flower Destination!"
                 score += 100
+                citypicker("flower2");
                 if (weird1check == true){
                     dialogueother.push("weird1");
                     weird1check = false;
@@ -1250,6 +1522,7 @@
                 currentperson = cityman;
                 tasksign = "none";
                 currenttitle = "Blue Sky Thinker!"
+                citypicker("flower1");
                 score += 1000;
                 if (weird2check == true){
                     dialogueother.push("weird2");
@@ -1263,6 +1536,7 @@
                 currentperson = cityman;
                 tasksign = "none";
                 currenttitle = "Hates bugs!"
+                citypicker("flower5");
                 score += 1000;
                 if (weird3check == true){
                     dialogueother.push("weird3");
@@ -1275,7 +1549,8 @@
                 dialoguetext4 = " ";
                 currentperson = cityman;
                 tasksign = "none";
-                currenttitle = "Remarkable citizen!"
+                currenttitle = "Red-markable citizen!"
+                citypicker("flower2");
                 score += 1000;
             } else if (dialoguetype == "pink20"){
                 dialoguetext = "Thank you! If you'd like to dispute";
@@ -1285,6 +1560,7 @@
                 currentperson = cityman;
                 tasksign = "none";
                 currenttitle = "Best points!"
+                citypicker("flower4");
                 score += 4430;
 
             } else if (dialoguetype == "pink30"){
@@ -1295,6 +1571,7 @@
                 currentperson = cityman;
                 tasksign = "none";
                 currenttitle = "Floral Superstar!"
+                citypicker("flower4");
                 score += 3000;
 
             } else if (dialoguetype == "purple8"){
@@ -1305,6 +1582,7 @@
                 currentperson = cityman;
                 tasksign = "none";
                 currenttitle = "Mr. Property Value!"
+                citypicker("flower3");
                 score += 2500;
             } else if (dialoguetype== "bigpink"){
                 dialoguetext = "You planted all these yourself?";
@@ -1320,7 +1598,7 @@
                 dialoguetext3 = "you're being. Keep it up!";
                 dialoguetext4 = " ";
                 currentperson = cityman;
-                currenttitle = "Successful person!"
+                currenttitle = "Blu-ccessful person!"
                 score += 20000;
             } else if (dialoguetype== "bigorange"){
                 dialoguetext = "We got together and made you this award.";
@@ -1351,7 +1629,7 @@
                 dialoguetext2 = "different flower seeds together.";
                 dialoguetext3 = "I think I'll write a poem about it.";
                 dialoguetext4 = " ";
-                currentperson = community4;
+                currentperson = community1;
             } else if (dialoguetype== "weird2"){
                 dialoguetext = "I tripped over a Lightbulb in the dirt";
                 dialoguetext2 = "the other day. It was surrounded by";
@@ -1363,7 +1641,7 @@
                 dialoguetext2 = "strawberries and oranges?";
                 dialoguetext3 = "Without bees or butterflies,";
                 dialoguetext4 = "it could happen!";
-                currentperson = community1;
+                currentperson = community4;
             } 
         }
 
@@ -1549,9 +1827,71 @@
         
         // if this is the first time the player has seen the flower, the player gets one diversity point (but they won't get a point for this flower again)
         function countflower(thisflower){
-            if (thisflower == false){
+            if (seenFlowerMap[thisflower] === false){
                 diversity +=1;
-                thisflower = true;
+                seenFlowerMap[thisflower] = true;
+            }
+        }
+
+        // this function removes all the pure flowers of a specific type from the grid. 
+        // this is called when the player completes a task for the city. 
+
+        function citypicker(thisflower){
+            grid.forEach(function (rowofgrid, y) {
+                rowofgrid.forEach(function (colofgrid, x) {
+                    if (grid[y][x] == thisflower){
+                        grid[y][x] = "empty";
+                    }
+                })
+            })
+        }
+
+        function soundflowers(){
+            let techflowers = 0;
+            let organicflowers = 0;
+            grid.forEach(function(rowofgrid, y){
+                rowofgrid.forEach(function (colofgrid, x){
+                    if (grid[y][x] == "flower1" || grid[y][x] == "flower2" || grid[y][x] == "flower3" || grid[y][x] == "flower4" || grid[y][x] == "flower5"){
+                        organicflowers +=1;
+                    } else if (grid[y][x] == "flower12" || grid[y][x] == "flower13" || grid[y][x] == "flower14" || grid[y][x] == "flower15"){
+                        techflowers +=1;
+                    } else if (grid[y][x] == "flower21" || grid[y][x] == "flower23" || grid[y][x] == "flower24" || grid[y][x] == "flower25"){
+                        techflowers +=1; 
+                    } else if (grid[y][x] == "flower31" || grid[y][x] == "flower32" || grid[y][x] == "flower34" || grid[y][x] == "flower35"){
+                        techflowers +=1; 
+                    } else if (grid[y][x] == "flower41" || grid[y][x] == "flower42" || grid[y][x] == "flower43" || grid[y][x] == "flower45"){
+                        techflowers +=1; 
+                    } else if (grid[y][x] == "flower51" || grid[y][x] == "flower52" || grid[y][x] == "flower53" || grid[y][x] == "flower54"){
+                        techflowers +=1; 
+                    } 
+                    })
+                })
+            if (organicflowers > techflowers) {
+                if ((organicflowers - techflowers) > 2) {
+                    return "organic";
+                } else {
+                    if ((organicflowers+techflowers)<4){
+                        return "empty";
+                    } else {
+                        return "similar";
+                    }
+                    
+                }
+            } else if (techflowers > organicflowers) {
+                if ((techflowers - organicflowers) > 2) {
+                    return "tech";
+                } else {
+                    if ((organicflowers+techflowers)<4){
+                        return "empty";
+                    } else {
+                        return "similar";
+                    }
+                }
+            } else if (organicflowers == techflowers) {
+                if ((organicflowers+techflowers)<4){
+                    return "empty";
+                }
+                return "similar";
             }
         }
 
