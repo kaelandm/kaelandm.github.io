@@ -97,11 +97,19 @@
         // this variable holds the person who is "speaking" in the active dialogue scene (it changes depending on the active scene)
         var currentperson;
 
+        // this variable holds the current type of sound that is playing. used to detect when stem changes should be played.  
+        var currentsound = 0;
+
         // this variable holds the weight of text box outlines
         var outlineweight;
 
         // this variable holds the player's score according to the city
         var score = 0;
+        
+        // this variable ensures that the credits are visible for at least one second
+        var creditscounter = 0;
+        var creditsX
+        var creditsY
 
         // these variables keep track of how many pure flowers the player has grown
         var flower1score = 0;
@@ -290,6 +298,9 @@
             techstem = loadSound('assets/sounds/techstem.mp3');
             organicstem = loadSound('assets/sounds/organicstem.mp3');
             defaultstem = loadSound('assets/sounds/defaultstem.mp3');
+            stemchange1 = loadSound('assets/sounds/stemchange1.mp3');
+            stemchange2 = loadSound('assets/sounds/stemchange2.mp3');
+            stemchange3 = loadSound('assets/sounds/stemchange3.mp3');
 
             bins = [bin1,bin2];
             plantings = [planting1,planting2,planting3,planting4];
@@ -307,9 +318,6 @@
 
         function draw() {
 
-            // font 
-            textFont(bitpotion);
-            textSize(unitwidth);
             // resize the page and change the locations of images if the player changes the window size
             gameWidth = windowWidth;
             gameHeight = windowHeight;
@@ -326,8 +334,14 @@
             pauseY = unitwidth;
             gridtop = unitwidth * 3;
             mulchY = gridtop+(unitwidth*2);
+            creditsX = gridmargin + unitwidth;
+            creditsY = gridtop + (unitwidth * 5);
 
             resizeCanvas(gameWidth, gameHeight);
+
+            // font 
+            textFont(bitpotion);
+            textSize(unitwidth);
 
             // draw background 
             background(7, 24, 33);
@@ -713,8 +727,9 @@
             // if there is dialogue, display the person and the text 
             if (gamestate == "dialogue") {
                 dialogue();
-                gamestate = "showdialogue"
+                gamestate = "showdialogue";
             } 
+
             if (gamestate == "showdialogue"){
                 image(currentperson, unitwidth * 4, gameHeight - (unitwidth * 8), unitwidth * 3, unitwidth * 5);
                 push();
@@ -736,9 +751,27 @@
                 fill(dark);
                 noStroke();
                 rect(0,0,gameWidth,gameHeight);
-                image(logo,gridmargin-unitwidth,gridtop,unitwidth*8,unitwidth*2)
-                fill(255);
-                text("click to start",gridmargin+unitwidth,gridtop+(unitwidth*5));
+                image(logo, gridmargin - unitwidth, gridtop, unitwidth * 8, unitwidth * 2)
+                if (mouseY > creditsY - unitwidth) {
+                    if (mouseY < creditsY + unitwidth) {
+                        fill(lightish);
+                        text("credits", creditsX, creditsY);
+                        fill(255);
+                        text("click to start", gridmargin + unitwidth, gridtop + (unitwidth * 4));
+
+                    } else {
+                        fill(255);
+                        text("credits", creditsX, creditsY);
+                        fill(lightish);
+                        text("click to start", gridmargin + unitwidth, gridtop + (unitwidth * 4));
+
+                    }
+                } else {
+                    fill(255);
+                    text("credits", creditsX, creditsY);
+                    fill(lightish);
+                    text("click to start", gridmargin + unitwidth, gridtop + (unitwidth * 4));
+                }
                 pop();
             }
 
@@ -760,6 +793,23 @@
                 text("neat, tidy, colourful flowers. Send those flowers to the city",unitwidth,gridtop+(unitwidth*3));
                 text("to earn points, special titles, and the respect and admiration",unitwidth,gridtop+(unitwidth*4));
                 text("of the entire municipal board!",unitwidth,gridtop+(unitwidth*5));
+            }
+
+            if (gamestate == "credits"){
+                creditscounter +=1;
+                push();
+                fill(dark);
+                noStroke();
+                rect(0,0,gameWidth,gameHeight);
+                fill(255);
+                text("A Game by Gamma Space's Hyades Cluster",unitwidth,unitwidth);
+                text("Programming, Game Design, Writing: Kaelan Doyle Myerscough",unitwidth,gridtop-unitwidth);
+                text("Writing, Art, Game Design: Kaitlyn Dougon",unitwidth,gridtop);
+                text("Additional UI Design: Duncan O'Brien",unitwidth,gridtop+unitwidth);
+                text("SFX & Music: Tyler Lovell",unitwidth,gridtop+(unitwidth*2));
+                text("Producer: Henry Faber",unitwidth,gridtop+(unitwidth*3));
+                text("Based on the Installation by Jordan Sook",unitwidth,gridtop+(unitwidth*4));
+                text("Thanks to: RBC, Nike, TMAC, Gamma Space Co-op Members",unitwidth,gridtop+(unitwidth*5));
             }
 
 
@@ -931,17 +981,29 @@
                     organicstem.setVolume(0);
                     techstem.setVolume(0);
                 } else if (soundflowers()=="similar"){
+                    if (currentsound !== 1){
+                        stemchange1.play();
+                    }
                     defaultstem.setVolume(0.6);
                     organicstem.setVolume(0.6);
                     techstem.setVolume(0.6);
+                    currentsound = 1;
                 } else if (soundflowers()=="tech"){
+                    if (currentsound !== 2){
+                        stemchange2.play();
+                    }
                     defaultstem.setVolume(0.7);
                     organicstem.setVolume(0);
                     techstem.setVolume(0.7);
+                    currentsound = 2;
                 } else if (soundflowers()=="organic"){
+                    if (currentsound !== 3){
+                        stemchange3.play();
+                    }
                     defaultstem.setVolume(0.7);
                     organicstem.setVolume(0.7);
                     techstem.setVolume(0);
+                    currentsound = 3;
                 }
 
                 // check to see if any dialogue scenes will be played in the next day 
@@ -963,58 +1025,70 @@
         }
         // when the mouse is clicked, we check what state the game is in to decide what actions are possible.  
         function mouseClicked() {
-            // remember the X and Y coordinates of the location where the click happened.
-            clickedX = int(mouseX);
-            clickedY = int(mouseY);
-            // this handles the start menu interactions
-            // if the game state is neutral, this means the player is not holding any seed. 
-            if (gamestate == "neutral") {
-                // check if the mouse was clicked on the buttons - if so, change the game state to reflect this. 
-                pickup();
+            if (!window.chrome) {
+                // remember the X and Y coordinates of the location where the click happened.
+                clickedX = int(mouseX);
+                clickedY = int(mouseY);
+                // this handles the start menu interactions
+                // if the game state is neutral, this means the player is not holding any seed. 
+                if (gamestate == "neutral") {
+                    // check if the mouse was clicked on the buttons - if so, change the game state to reflect this. 
+                    pickup();
 
-            } else if (gamestate == "mulch"){
-                mulcher();
+                } else if (gamestate == "mulch"){
+                    mulcher();
+                }
+
+                else if (gamestate == "holding1") {
+                    holder("seed1");
+                }
+
+                else if (gamestate == "holding2") {
+                    holder("seed2");
+                }
+
+                else if (gamestate == "holding3") {
+                    holder("seed3");
+                }
+
+                else if (gamestate == "holding4") {
+                    holder("seed4");
+                }
+
+                else if (gamestate == "holding5") {
+                    holder("seed5");
+                }
+
+                else if (gamestate == "menu") {
+                    gamestate = "neutral";
+                }
+
+                else if (gamestate == "showdialogue") {
+                    gamestate = "neutral";
+                } else if (gamestate == "tutorial"){
+                    defaultstem.loop();
+                    organicstem.loop();
+                    techstem.loop();
+                    defaultstem.setVolume(0.8);
+                    organicstem.setVolume(0);
+                    techstem.setVolume(0);
+                    gamestate = "neutral";
+                } else if (gamestate == "credits"){
+                    if (creditscounter>20){
+                        gamestate = "start";
+                    }
+                } else if (gamestate == "start") {
+                    if (clickedY > (creditsY - unitwidth)) {
+                        if (clickedY < (creditsY + unitwidth)) {
+                            gamestate = "credits";
+                        } else {
+                            gamestate = "tutorial";
+                        }
+                    } else {
+                        gamestate = "tutorial";
+                    }
+                }
             }
-
-            else if (gamestate == "holding1") {
-                holder("seed1");
-            }
-
-            else if (gamestate == "holding2") {
-                holder("seed2");
-            }
-
-            else if (gamestate == "holding3") {
-                holder("seed3");
-            }
-
-            else if (gamestate == "holding4") {
-                holder("seed4");
-            }
-
-            else if (gamestate == "holding5") {
-                holder("seed5");
-            }
-
-            else if (gamestate == "menu") {
-                gamestate = "neutral";
-            }
-
-            else if (gamestate == "showdialogue") {
-                gamestate = "neutral";
-            } else if (gamestate == "tutorial"){
-                defaultstem.loop();
-                organicstem.loop();
-                techstem.loop();
-                defaultstem.setVolume(0.8);
-                organicstem.setVolume(0);
-                techstem.setVolume(0);
-                gamestate = "neutral";
-            } else if (gamestate == "start"){
-                gamestate = "tutorial";
-            } 
-            
-
         }
 
         // mobile version, identical to mouseclicked. will this work? 
