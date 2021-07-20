@@ -2,8 +2,16 @@
 
 <head>
     <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
-
-    <title></title>
+    <style>
+        body {
+            margin-top: 0px;
+          background-color:#071821;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+          }
+        </style>
+    <title>HARVEST</title>
     <script src="p5.js"></script>
     <script src="p5.play.js"></script>
     <script src="p5.sound.js"></script>
@@ -310,17 +318,16 @@
 
         function setup() {
             // the canvas will be the width and height of the player's computer display.
-            gameWidth = windowWidth;
-            gameHeight = windowHeight;
+            gameWidth = (windowWidth/100)*95;
+            gameHeight = (windowHeight/100)*95;
             createCanvas(windowWidth, gameHeight);
-
         }
 
         function draw() {
 
             // resize the page and change the locations of images if the player changes the window size
-            gameWidth = windowWidth;
-            gameHeight = windowHeight;
+            gameWidth = (windowWidth/100)*95;
+            gameHeight = (windowHeight/100)*95;
 
             // the screen is divided into a grid made up of units, each of which is 1/20 of the width of the screen (and the same height)
             unitwidth = gameWidth / 20;
