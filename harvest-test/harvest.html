@@ -320,7 +320,7 @@
             // the canvas will be the width and height of the player's computer display.
             gameWidth = (windowWidth/100)*95;
             gameHeight = (windowHeight/100)*95;
-            createCanvas(windowWidth, gameHeight);
+            createCanvas(gameWidth, gameHeight);
         }
 
         function draw() {
@@ -1145,8 +1145,7 @@
             } else if (gamestate == "start"){
                 gamestate = "tutorial";
             } 
-            
-
+        return false;
         }
 
         // these functions help figure out which grid square the player clicked on 
