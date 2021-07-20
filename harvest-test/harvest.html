@@ -1085,6 +1085,7 @@
                         gamestate = "start";
                     }
                 } else if (gamestate == "start") {
+                    userStartAudio();
                     if (clickedY > (creditsY - unitwidth)) {
                         if (clickedY < (creditsY + unitwidth)) {
                             gamestate = "credits";
@@ -1101,52 +1102,69 @@
         // mobile version, identical to mouseclicked. will this work? 
 
         function touchStarted() {
-            // remember the X and Y coordinates of the location where the click happened.
-            clickedX = int(mouseX);
-            clickedY = int(mouseY);
-            // this handles the start menu interactions
-            // if the game state is neutral, this means the player is not holding any seed. 
-            if (gamestate == "neutral") {
-                // check if the mouse was clicked on the buttons - if so, change the game state to reflect this. 
-                pickup();
+                clickedX = int(mouseX);
+                clickedY = int(mouseY);
+                // this handles the start menu interactions
+                // if the game state is neutral, this means the player is not holding any seed. 
+                if (gamestate == "neutral") {
+                    // check if the mouse was clicked on the buttons - if so, change the game state to reflect this. 
+                    pickup();
 
-            } else if (gamestate == "mulch"){
-                mulcher();
+                } else if (gamestate == "mulch") {
+                    mulcher();
+                }
+
+                else if (gamestate == "holding1") {
+                    holder("seed1");
+                }
+
+                else if (gamestate == "holding2") {
+                    holder("seed2");
+                }
+
+                else if (gamestate == "holding3") {
+                    holder("seed3");
+                }
+
+                else if (gamestate == "holding4") {
+                    holder("seed4");
+                }
+
+                else if (gamestate == "holding5") {
+                    holder("seed5");
+                }
+
+                else if (gamestate == "menu") {
+                    gamestate = "neutral";
+                }
+
+                else if (gamestate == "showdialogue") {
+                    gamestate = "neutral";
+                } else if (gamestate == "tutorial") {
+                    defaultstem.loop();
+                    organicstem.loop();
+                    techstem.loop();
+                    defaultstem.setVolume(0.8);
+                    organicstem.setVolume(0);
+                    techstem.setVolume(0);
+                    gamestate = "neutral";
+                } else if (gamestate == "credits") {
+                    if (creditscounter > 20) {
+                        gamestate = "start";
+                    }
+                } else if (gamestate == "start") {
+                    userStartAudio();
+                    if (clickedY > (creditsY - unitwidth)) {
+                        if (clickedY < (creditsY + unitwidth)) {
+                            gamestate = "credits";
+                        } else {
+                            gamestate = "tutorial";
+                        }
+                    } else {
+                        gamestate = "tutorial";
+                    }
+                }
             }
-
-            else if (gamestate == "holding1") {
-                holder("seed1");
-            }
-
-            else if (gamestate == "holding2") {
-                holder("seed2");
-            }
-
-            else if (gamestate == "holding3") {
-                holder("seed3");
-            }
-
-            else if (gamestate == "holding4") {
-                holder("seed4");
-            }
-
-            else if (gamestate == "holding5") {
-                holder("seed5");
-            }
-
-            else if (gamestate == "menu") {
-                gamestate = "neutral";
-            }
-
-            else if (gamestate == "showdialogue") {
-                gamestate = "neutral";
-            } else if (gamestate == "tutorial"){
-                gamestate = "neutral";
-            } else if (gamestate == "start"){
-                gamestate = "tutorial";
-            } 
-        return false;
-        }
 
         // these functions help figure out which grid square the player clicked on 
         function gridfinderX(gx) {
