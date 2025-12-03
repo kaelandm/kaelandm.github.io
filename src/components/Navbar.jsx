@@ -30,12 +30,12 @@ function Navbar() {
             >
               Writing
             </Link>
-            <Link
+            {/* <Link
               to="/art"
               className="text-primary hover:text-accent-dark transition-colors font-medium"
             >
               Art
-            </Link>
+            </Link> */}
             <Link
               to="/portfolio"
               className="text-primary hover:text-accent-dark transition-colors font-medium"
