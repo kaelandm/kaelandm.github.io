@@ -56,7 +56,7 @@ function Home() {
             <Link to="/portfolio" className="btn-primary">
               View My Work
             </Link>
-            <Link to="https://kaelan.substack.com" className="btn-secondary">
+            <Link to="https://kaelan.substack.com" className="btn-primary">
               Read My Substack
             </Link>
             <Link to="https://kaelandm.itch.io/" className="btn-primary">

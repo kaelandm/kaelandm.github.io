@@ -473,13 +473,6 @@ function CV() {
               </p>
             </div>
           </div>
-
-          {/* Download CV */}
-          <div>
-            <a href="#" className="btn-primary block text-center text-sm">
-              Download CV
-            </a>
-          </div>
         </div>
       </div>
     </div>
