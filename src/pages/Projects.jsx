@@ -445,7 +445,7 @@ function Portfolio() {
       description:
         "A microgame about being bored on a bus, developed for the Meditations project",
       image: "/src/images/Windowpane1.png",
-      link: "https://kaelandm.github.io/windowpane/windowpane.html",
+      link: "https://kaelandm.github.io/projects/windowpane/windowpane.html",
       content: (
         <div>
           <p style={{ padding: 5 }}>
@@ -489,7 +489,7 @@ function Portfolio() {
       description: "A a browser-based, death metal-inspired action minigame.",
       image: "/src/images/Death_and_the_Maiden1.png",
       images: ["/src/images/Death_and_the_Maiden2.png"],
-      link: "https://kaelandm.github.io/death-maiden.html",
+      link: "https://kaelandm.github.io/projects/death-maiden.html",
       content: (
         <div>
           <p style={{ padding: 5 }}>
@@ -519,7 +519,7 @@ function Portfolio() {
       year: 2018,
       description: "A browser-based explorable solar system generator.",
       image: "/src/images/The_Final_Frontier1.png",
-      link: "https://kaelandm.github.io/space.html",
+      link: "https://kaelandm.github.io/projects/space.html",
       content: (
         <div>
           <p style={{ padding: 5 }}>
