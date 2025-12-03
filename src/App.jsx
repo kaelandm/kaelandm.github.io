@@ -19,7 +19,6 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/cv" element={<CV />} />
             <Route path="/writing" element={<Writing />} />
-            <Route path="/art" element={<Art />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/contact" element={<Contact />} />
