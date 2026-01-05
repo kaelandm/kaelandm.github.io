@@ -24,13 +24,13 @@ function Portfolio() {
       year: 2022,
       description:
         "A melancholy narrative game about making tea and watching the world change.",
-      image: "/src/images/The_Archipelago1.png",
+      image: "/images/The_Archipelago1.png",
       images: [
-        "/src/images/The_Archipelago2.png",
-        "/src/images/The_Archipelago3.png",
-        "/src/images/The_Archipelago4.png",
-        "/src/images/The_Archipelago5.png",
-        "/src/images/The_Archipelago6.png",
+        "/images/The_Archipelago2.png",
+        "/images/The_Archipelago3.png",
+        "/images/The_Archipelago4.png",
+        "/images/The_Archipelago5.png",
+        "/images/The_Archipelago6.png",
       ],
       link: "https://store.steampowered.com/app/2169730/The_Archipelago/",
 
@@ -96,12 +96,12 @@ function Portfolio() {
       year: 2021,
       description:
         "A web game developed to teach Humber and Seneca College staff how to avoid phishing scams.",
-      image: "/src/images/Reel_Big_Phishing_Trainer1.png",
+      image: "/images/Reel_Big_Phishing_Trainer1.png",
       images: [
-        "/src/images/Reel_Big_Phishing_Trainer2.png",
-        "/src/images/Reel_Big_Phishing_Trainer3.png",
-        "/src/images/Reel_Big_Phishing_Trainer4.png",
-        "/src/images/Reel_Big_Phishing_Trainer5.png",
+        "/images/Reel_Big_Phishing_Trainer2.png",
+        "/images/Reel_Big_Phishing_Trainer3.png",
+        "/images/Reel_Big_Phishing_Trainer4.png",
+        "/images/Reel_Big_Phishing_Trainer5.png",
       ],
       link: "#",
       content: (
@@ -148,8 +148,8 @@ function Portfolio() {
       year: 2019,
       description:
         "A turn-based naval strategy game, with birds piloting the ships.",
-      image: "/src/images/Bilgebirds1.png",
-      images: ["/src/images/Bilgebirds2.gif", "/src/images/Bilgebirds3.gif"],
+      image: "/images/Bilgebirds1.png",
+      images: ["/images/Bilgebirds2.gif", "/images/Bilgebirds3.gif"],
       link: "https://rosalindmc.itch.io/bilgebirds",
       content: (
         <div>
@@ -183,11 +183,8 @@ function Portfolio() {
       title: "The Traveller",
       year: 2017,
       description: "A branching-narrative time-travelling visual novel.",
-      image: "/src/images/The_Traveller1.png",
-      images: [
-        "/src/images/The_Traveller2.png",
-        "/src/images/The_Traveller3.png",
-      ],
+      image: "/images/The_Traveller1.png",
+      images: ["/images/The_Traveller2.png", "/images/The_Traveller3.png"],
       link: "http://traveller-game.com/",
       content: (
         <div>
@@ -245,8 +242,8 @@ function Portfolio() {
       year: 2021,
       description:
         "A browser-based grid puzzle game developed in collaboration with Toronto artist Jordan Sook.",
-      image: "/src/images/Harvest1.png",
-      images: ["/src/images/Harvest2.png", "/src/images/Harvest3.png"],
+      image: "/images/Harvest1.png",
+      images: ["/images/Harvest2.png", "/images/Harvest3.png"],
       link: "https://harvestthefuture.art/",
       content: (
         <div>
@@ -317,8 +314,8 @@ function Portfolio() {
       year: 2020,
       description:
         "A Godot minigame in which you play a monster who steals faces.",
-      image: "/src/images/The_Faceless_City1.png",
-      images: ["/src/images/The_Faceless_City2.jpg"],
+      image: "/images/The_Faceless_City1.png",
+      images: ["/images/The_Faceless_City2.jpg"],
       link: "https://kaelandm.itch.io/the-faceless-city",
       content: (
         <div>
@@ -365,11 +362,8 @@ function Portfolio() {
       year: 2020,
       description:
         "A point-and-click narrative game about caring for people from a distance.",
-      image: "/src/images/Dear_Lighthouse1.gif",
-      images: [
-        "/src/images/Dear_Lighthouse2.png",
-        "/src/images/Dear_Lighthouse3.png",
-      ],
+      image: "/images/Dear_Lighthouse1.gif",
+      images: ["/images/Dear_Lighthouse2.png", "/images/Dear_Lighthouse3.png"],
       link: "https://kaelandm.itch.io/dear-lighthouse",
       content: (
         <div>
@@ -409,8 +403,8 @@ function Portfolio() {
       year: 2018,
       description:
         "A puzzle-themed ARG developed for a party for a large tech company in Cambridge, MA.",
-      image: "/src/images/Puzzle_Party_Project1.png",
-      images: ["/src/images/Puzzle_Party_Project2.png"],
+      image: "/images/Puzzle_Party_Project1.png",
+      images: ["/images/Puzzle_Party_Project2.png"],
       link: "#",
       content: (
         <div>
@@ -444,7 +438,7 @@ function Portfolio() {
       year: 2019,
       description:
         "A microgame about being bored on a bus, developed for the Meditations project",
-      image: "/src/images/Windowpane1.png",
+      image: "/images/Windowpane1.png",
       link: "https://kaelandm.github.io/projects/windowpane/windowpane.html",
       content: (
         <div>
@@ -487,8 +481,8 @@ function Portfolio() {
       title: "Death and the Maiden",
       year: 2019,
       description: "A a browser-based, death metal-inspired action minigame.",
-      image: "/src/images/Death_and_the_Maiden1.png",
-      images: ["/src/images/Death_and_the_Maiden2.png"],
+      image: "/images/Death_and_the_Maiden1.png",
+      images: ["/images/Death_and_the_Maiden2.png"],
       link: "https://kaelandm.github.io/projects/death-maiden.html",
       content: (
         <div>
@@ -518,7 +512,7 @@ function Portfolio() {
       title: "The Final Frontier",
       year: 2018,
       description: "A browser-based explorable solar system generator.",
-      image: "/src/images/The_Final_Frontier1.png",
+      image: "/images/The_Final_Frontier1.png",
       link: "https://kaelandm.github.io/projects/space.html",
       content: (
         <div>
@@ -542,8 +536,8 @@ function Portfolio() {
       title: "Worldbot",
       year: 2020,
       description: "A discord bot game for collaborative worldbuilding.",
-      image: "/src/images/Worldbot2.png",
-      images: ["/src/images/Worldbot1.png", "/src/images/Worldbot3.png"],
+      image: "/images/Worldbot2.png",
+      images: ["/images/Worldbot1.png", "/images/Worldbot3.png"],
       link: "https://atranimal.github.io/worldbot-art/",
       content: (
         <div>
@@ -589,11 +583,11 @@ function Portfolio() {
       title: "One Hour Worldbuilders",
       year: 2019,
       description: "A collaborative worldbuilding card game.",
-      image: "/src/images/One_Hour_Worldbuilders1.png",
+      image: "/images/One_Hour_Worldbuilders1.png",
       images: [
-        "/src/images/One_Hour_Worldbuilders2.png",
-        "/src/images/One_Hour_Worldbuilders3.jpeg",
-        "/src/images/One_Hour_Worldbuilders4.jpg",
+        "/images/One_Hour_Worldbuilders2.png",
+        "/images/One_Hour_Worldbuilders3.jpeg",
+        "/images/One_Hour_Worldbuilders4.jpg",
       ],
       link: "https://kaelandm.itch.io/one-hour-worldbuilders",
       content: (
@@ -640,10 +634,10 @@ function Portfolio() {
       year: 2021,
       description:
         "A two-player game designed for on-site play at the Bentway in Toronto. Commissioned by the Bentway.",
-      image: "/src/images/The_Garrison_and_the_Gardiner1.png",
+      image: "/images/The_Garrison_and_the_Gardiner1.png",
       images: [
-        "/src/images/The_Garrison_and_the_Gardiner2.png",
-        "/src/images/The_Garrison_and_the_Gardiner3.png",
+        "/images/The_Garrison_and_the_Gardiner2.png",
+        "/images/The_Garrison_and_the_Gardiner3.png",
       ],
       link: "https://play.thebentway.ca/experience/the-garrison-and-the-gardiner/",
       content: (
@@ -688,10 +682,10 @@ function Portfolio() {
       title: "City Planning Department",
       year: 2019,
       description: "A secret-role city-building game for 3-6 players.",
-      image: "/src/images/City_Planning_Department1.png",
+      image: "/images/City_Planning_Department1.png",
       images: [
-        "/src/images/City_Planning_Department2.png",
-        "/src/images/City_Planning_Department3.png",
+        "/images/City_Planning_Department2.png",
+        "/images/City_Planning_Department3.png",
       ],
       link: "https://kaelandm.itch.io/city-planning-department",
       content: (
@@ -740,7 +734,7 @@ function Portfolio() {
       year: 2020,
       description:
         "A two-player puzzle game in which you make a cup of tea and transform to accommodate its flavors.",
-      image: "/src/images/The_Shukaku_Game1.png",
+      image: "/images/The_Shukaku_Game1.png",
       link: "https://kaelandm.itch.io/the-shukaku-game",
       content: (
         <div>
@@ -786,7 +780,7 @@ function Portfolio() {
       year: 2019,
       description:
         "A two-player RPG about meeting after a long time. Developed for the 200 Word RPG Challenge.",
-      image: "/src/images/Rendezvous1.png",
+      image: "/images/Rendezvous1.png",
       link: "https://200wordrpg.github.io/2019/rpg/finalist/2019/10/12/Rendezvous.html",
       content: (
         <div>
@@ -807,11 +801,11 @@ function Portfolio() {
       title: "Space Pitch",
       year: 2017,
       description: "A four-player story-building card game.",
-      image: "/src/images/Space_Pitch1.png",
+      image: "/images/Space_Pitch1.png",
       images: [
-        "/src/images/Space_Pitch2.png",
-        "/src/images/Space_Pitch3.png",
-        "/src/images/Space_Pitch4.png",
+        "/images/Space_Pitch2.png",
+        "/images/Space_Pitch3.png",
+        "/images/Space_Pitch4.png",
       ],
       link: "#",
       content: (
@@ -833,11 +827,11 @@ function Portfolio() {
       year: 2017,
       description:
         "A game/social behavior experiment developed with a large tech company in Cambridge, MA.",
-      image: "/src/images/Tech_Company_Game_Project1.png",
+      image: "/images/Tech_Company_Game_Project1.png",
       images: [
-        "/src/images/Tech_Company_Game_Project2.png",
-        "/src/images/Tech_Company_Game_Project3.png",
-        "/src/images/Tech_Company_Game_Project4.png",
+        "/images/Tech_Company_Game_Project2.png",
+        "/images/Tech_Company_Game_Project3.png",
+        "/images/Tech_Company_Game_Project4.png",
       ],
       link: "#",
       tags: ["Digital", "Artist"],
@@ -848,7 +842,7 @@ function Portfolio() {
       year: 2025,
       description:
         "A narrative game about entering a fighting game tournament.",
-      image: "/src/images/Tournament_Winner1.png",
+      image: "/images/Tournament_Winner1.png",
       link: "#",
       content: (
         <div>
@@ -892,8 +886,8 @@ function Portfolio() {
       year: 2025,
       description:
         "An unsettling monster battler in which your creatures remember how you treat them.",
-      image: "/src/images/Creatures_After_Calamity1.png",
-      images: ["/src/images/Creatures_After_Calamity2.png"],
+      image: "/images/Creatures_After_Calamity1.png",
+      images: ["/images/Creatures_After_Calamity2.png"],
       link: "https://store.steampowered.com/app/2859560/Creatures_After_Calamity/",
       content: (
         <div>
@@ -928,7 +922,7 @@ function Portfolio() {
       year: 2025,
       description:
         "A suite of digital minigames for playful collaborative worldbuilding.",
-      image: "/src/images/Planetary1.png",
+      image: "/images/Planetary1.png",
       link: "#",
       content: (
         <div>

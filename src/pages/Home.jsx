@@ -6,7 +6,7 @@ function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
         <div>
           <img
-            src="/src/images/Headshot.png"
+            src="/images/Headshot.png"
             alt="Profile"
             className="rounded-lg w-full"
           />
