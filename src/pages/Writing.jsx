@@ -136,6 +136,15 @@ function Writing() {
         "I spoke on my experiences as a transgender game developer at the Goethe Institut in Taipei.",
     },
     {
+      id: 28,
+      title:
+        "Massey Dialogues - The Politics of Play: Digital Games in the Canadian Context",
+      year: 2023,
+      link: "https://www.youtube.com/watch?v=vnSJ5guo8HA",
+      summary:
+        "I joined a panel at Massey College to discuss the politics of game development in Canada.",
+    },
+    {
       id: 19,
       title: "How to Build Intimate Worlds ",
       venue: "Worlds and World-building Symposium",
