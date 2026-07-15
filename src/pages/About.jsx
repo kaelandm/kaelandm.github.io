@@ -16,6 +16,32 @@ function CV() {
               <div>
                 <div className="flex justify-between items-baseline">
                   <h3 className="text-base font-semibold text-primary">
+                    Lead Narrative Designer and Game Writer{" "}
+                    <span className="text-accent text-sm font-light ml-2">
+                      Kitten Cup Studio
+                    </span>
+                  </h3>
+                  <p className="text-accent text-sm whitespace-nowrap">2026</p>
+                </div>
+                <ul className="text-primary/70 text-sm mt-2 ml-4 space-y-1 border-l-2 border-accent pl-4">
+                  <li>
+                    Wrote over 40,000 words, including branching questlines,
+                    gameplay-reactive dialogue, and two-player co-operative
+                    narrative choices, for Capy Castaway.
+                  </li>
+                  <li>
+                    Implemented dialogue and tutorial text in Yarnspinner and
+                    Unity.
+                  </li>
+                  <li>
+                    Took ownership of overall narrative design; contributed to
+                    UI/UX and game design.
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-base font-semibold text-primary">
                     Narrative Designer{" "}
                     <span className="text-accent text-sm font-light ml-2">
                       Kitten Cup Studio
@@ -25,8 +51,8 @@ function CV() {
                 </div>
                 <ul className="text-primary/70 text-sm mt-2 ml-4 space-y-1 border-l-2 border-accent pl-4">
                   <li>
-                    Designed a branching narrative for Kitten Cup Studio's
-                    second title, Capy Castaway.
+                    Contributed to narrative concepting for cozy 3D adventure
+                    game, Capy Castaway.
                   </li>
                   <li>
                     Developed a world and concepted characters with the lead
@@ -35,7 +61,7 @@ function CV() {
                   </li>
                   <li>
                     Worked according to pre-production deadlines as part of a
-                    10-person team.
+                    10-person studio.
                   </li>
                 </ul>
               </div>
@@ -141,6 +167,29 @@ function CV() {
               Teaching
             </h2>
             <div className="space-y-2">
+              <div>
+                <div className="flex justify-between items-baseline">
+                  <h3 className="text-base font-semibold text-primary">
+                    Instructor: Critical Worldbuilding{" "}
+                    <span className="text-accent text-sm font-light ml-2">
+                      University of Chicago
+                    </span>
+                  </h3>
+                  <p className="text-accent text-sm whitespace-nowrap">2026</p>
+                </div>
+                <ul className="text-primary/70 text-sm mt-2 ml-4 space-y-1 border-l-2 border-accent pl-4">
+                  <li>
+                    Designed and taught (as instructor of record) Critical
+                    Worldbuilding, a hybrid theory/practice course on the
+                    history and methodologies for fictional worldbuilding with
+                    12 students.
+                  </li>
+                  <li>
+                    Independently developed a course concept, syllabus, lesson
+                    plans, and assignments.
+                  </li>
+                </ul>
+              </div>
               <div>
                 <div className="flex justify-between items-baseline">
                   <h3 className="text-base font-semibold text-primary">
