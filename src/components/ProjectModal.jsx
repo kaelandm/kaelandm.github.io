@@ -47,7 +47,6 @@ function ProjectModal({ project, onClose }) {
             <h2 className="text-4xl font-black italic text-primary mb-2">
               {project.title}
             </h2>
-            <p className="text-primary/60 font-semibold">{project.year}</p>
           </div>
 
           {/* Image carousel (main image + additional images) */}
