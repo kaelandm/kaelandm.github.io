@@ -37,6 +37,12 @@ function Navbar() {
               Portfolio
             </Link>
             <Link
+              to="/art"
+              className="text-primary hover:text-accent-dark transition-colors font-medium"
+            >
+              Art
+            </Link>
+            <Link
               to="https://kaelan.substack.com"
               className="text-accent hover:text-accent-dark transition-colors font-medium"
             >
