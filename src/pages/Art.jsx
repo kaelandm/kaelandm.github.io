@@ -1,80 +1,80 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 function Art() {
-  const availableTags = ['Pixel Art', 'UI', 'Digital Art', 'Visual Design']
-  const [selectedTags, setSelectedTags] = useState([])
+  const availableTags = ["Pixel Art", "UI", "Digital Art", "Visual Design"];
+  const [selectedTags, setSelectedTags] = useState([]);
 
   const artworks = [
     {
       id: 1,
-      image: '/api/placeholder/300/400',
-      tags: ['Pixel Art', 'Digital Art'],
+      image: "/api/placeholder/300/400",
+      tags: ["Pixel Art", "Digital Art"],
       width: 1,
       height: 1.33,
     },
     {
       id: 2,
-      image: '/api/placeholder/400/300',
-      tags: ['UI', 'Visual Design'],
+      image: "/api/placeholder/400/300",
+      tags: ["UI", "Visual Design"],
       width: 1.33,
       height: 1,
     },
     {
       id: 3,
-      image: '/api/placeholder/350/350',
-      tags: ['Digital Art'],
+      image: "/api/placeholder/350/350",
+      tags: ["Digital Art"],
       width: 1,
       height: 1,
     },
     {
       id: 4,
-      image: '/api/placeholder/300/450',
-      tags: ['Pixel Art'],
+      image: "/api/placeholder/300/450",
+      tags: ["Pixel Art"],
       width: 1,
       height: 1.5,
     },
     {
       id: 5,
-      image: '/api/placeholder/450/300',
-      tags: ['Visual Design', 'UI'],
+      image: "/api/placeholder/450/300",
+      tags: ["Visual Design", "UI"],
       width: 1.5,
       height: 1,
     },
     {
       id: 6,
-      image: '/api/placeholder/350/350',
-      tags: ['Digital Art', 'Visual Design'],
+      image: "/api/placeholder/350/350",
+      tags: ["Digital Art", "Visual Design"],
       width: 1,
       height: 1,
     },
     {
       id: 7,
-      image: '/api/placeholder/400/300',
-      tags: ['Pixel Art', 'Digital Art'],
+      image: "/api/placeholder/400/300",
+      tags: ["Pixel Art", "Digital Art"],
       width: 1.33,
       height: 1,
     },
     {
       id: 8,
-      image: '/api/placeholder/300/500',
-      tags: ['UI'],
+      image: "/api/placeholder/300/500",
+      tags: ["UI"],
       width: 1,
       height: 1.67,
     },
-  ]
+  ];
 
   const toggleTag = (tag) => {
     setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    )
-  }
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
 
   const filteredArtworks =
     selectedTags.length === 0
       ? artworks
       : artworks.filter((artwork) =>
-          selectedTags.every((tag) => artwork.tags.includes(tag))
-        )
+          selectedTags.every((tag) => artwork.tags.includes(tag)),
+        );
 
   return (
     <div className="w-full bg-primary-light">
@@ -92,8 +92,8 @@ function Art() {
               onClick={() => toggleTag(tag)}
               className={`px-4 py-2 rounded-full font-semibold transition-all ${
                 selectedTags.includes(tag)
-                  ? 'bg-accent text-primary-light ring-2 ring-accent-alt'
-                  : 'bg-primary/10 text-primary hover:bg-primary/15'
+                  ? "bg-accent text-primary-light ring-2 ring-accent-alt"
+                  : "bg-primary/10 text-primary hover:bg-primary/15"
               }`}
             >
               {tag}
@@ -133,7 +133,7 @@ function Art() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Art
+export default Art;
